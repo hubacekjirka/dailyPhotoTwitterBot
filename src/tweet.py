@@ -1,12 +1,11 @@
-import tweepy
-import os 
+from PIL import JpegImagePlugin, Image
+from PIL.ExifTags import TAGS
 from os import listdir
 from random import randint
 import sys
 import hashlib
-from PIL import JpegImagePlugin, Image
-from PIL.ExifTags import TAGS
-
+import tweepy
+import os
 import PIL.Image
 
 
@@ -19,8 +18,10 @@ from config import (
 
 CURRENTDIR = os.path.dirname(os.path.realpath(__file__))
 INTROTEXT = "Photo of the day."
-CLOSURETEXT = "By photo of the day Twitter bot (github: )." #TODO
+CLOSURETEXT = "By photo of the day Twitter bot (GitHub: http://bit.ly/2YGoHrG)."
 
+debug = True
+tweetingEnabled = True
 photoFolder = os.path.join(CURRENTDIR,"photo")
 
 def getMd5Hash(filePath):
@@ -54,24 +55,35 @@ def getExif(photoPath):
     }
     return exif
 
-def getTweetMessage(introText,exifData,closureText):
-    tweetMessage = f"{introText} "
+def getExifSection(exifData):
+    exifSection = []
 
-    exifSection = ""
     if exifData.get("Model"):
-        exifSection += f"shot on {exifData.get('Model')}"
+        exifSection.append(f"shot on {exifData.get('Model')}")
 
     if exifData.get("DateTimeOriginal"):
-        if exifSection != "":
-            exifSection += ", "
-        exifSection += f"sometimes in {exifData.get('DateTimeOriginal')[:4]}"
+        exifSection.append(f"sometimes in {exifData.get('DateTimeOriginal')[:4]}")
 
-    if exifSection != "":
-        exifSection = exifSection.capitalize()
-        exifSection += "."
-    
-    tweetMessage = f"{introText} {exifSection} {closureText}"
-    return tweetMessage
+    if len(exifSection) > 0:
+        exifSection[0] = exifSection[0][:1].upper() + exifSection[0][1:]
+
+    output = f"{', '.join(exifSection)}."
+    return output
+
+def getHashtags(exifData):
+    hashtags = []
+
+    hashtags.append("#photoOfTheDay")
+
+    if exifData.get("Model"):
+        hashtags.append(f"#{exifData.get('Model').replace(' ','')}")
+
+    #TODO: country based on geo
+
+    #TODO: AI recognized attributes
+
+    output = f"{' '.join(hashtags)}"
+    return output
 
 def isSimilarAlreadyPosted():
     # TODO: https://realpython.com/fingerprinting-images-for-near-duplicate-detection/
@@ -88,6 +100,7 @@ def postMediaUpdate(api,filePath,tweetMessage):
         result=-1
     return result
 
+
 ### Authenticate using application keys
 auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
 auth.set_access_token(access_token, access_token_secret)
@@ -100,14 +113,22 @@ pickedPhoto = photos[randint(0,len(photos)-1)]
 
 ### get its exif information
 exifData = getExif(os.path.join(CURRENTDIR,"photo",pickedPhoto))
-tweetMessage = getTweetMessage(INTROTEXT,exifData,CLOSURETEXT)
+exifSection = getExifSection(exifData)
+hashtags = getHashtags(exifData)
+
+tweetMessage = f"{INTROTEXT} {exifSection} {CLOSURETEXT} {hashtags}"
+
+if debug:
+    print(tweetMessage)
 
 ### post it
-postStatus = 0
-# postStatus = postMediaUpdate(
-#     api,
-#     os.path.join(CURRENTDIR,"photo",pickedPhoto),
-#     tweetMessage)
+if tweetingEnabled:
+    postStatus = postMediaUpdate(
+        api,
+        os.path.join(CURRENTDIR,"photo",pickedPhoto),
+        tweetMessage)
+else:
+    postStatus = -1
 
 ### move file, if posting is succesful
 if postStatus == 0:
