@@ -1,5 +1,7 @@
 config.py
 .vscode
+photo/
+usedPhoto/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
