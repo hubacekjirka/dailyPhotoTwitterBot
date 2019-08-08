@@ -22,7 +22,8 @@ CLOSURETEXT = "By photo of the day Twitter bot (GitHub: http://bit.ly/2YGoHrG)."
 
 debug = True
 tweetingEnabled = True
-photoFolder = os.path.join(CURRENTDIR,"photo")
+photoFolder = os.path.join(CURRENTDIR,"photos","backlog")
+usedPhotoFolder = os.path.join(CURRENTDIR,"photos","usedPhoto")
 
 def getMd5Hash(filePath):
     bufferSize = 65536
@@ -93,13 +94,15 @@ def postMediaUpdate(api,filePath,tweetMessage):
     result=0
     try:
         api.update_with_media(
-            os.path.join(CURRENTDIR,"photo",pickedPhoto),
+            filePath,
             status = tweetMessage)
     except Exception as e:
         print(e)
         result=-1
     return result
 
+def resize():
+    pass
 
 ### Authenticate using application keys
 auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
@@ -112,26 +115,24 @@ photos = [f for f in listdir(photoFolder)]
 pickedPhoto = photos[randint(0,len(photos)-1)]
 
 ### get its exif information
-exifData = getExif(os.path.join(CURRENTDIR,"photo",pickedPhoto))
+exifData = getExif(os.path.join(photoFolder,pickedPhoto))
 exifSection = getExifSection(exifData)
 hashtags = getHashtags(exifData)
 
 tweetMessage = f"{INTROTEXT} {exifSection} {CLOSURETEXT} {hashtags}"
 
-if debug:
-    print(tweetMessage)
-
 ### post it
 if tweetingEnabled:
     postStatus = postMediaUpdate(
         api,
-        os.path.join(CURRENTDIR,"photo",pickedPhoto),
+        os.path.join(photoFolder,pickedPhoto),
         tweetMessage)
 else:
     postStatus = -1
 
 ### move file, if posting is succesful
 if postStatus == 0:
-    #move file
-    os.rename(os.path.join(CURRENTDIR,"photo",pickedPhoto),
-    os.path.join(CURRENTDIR,"usedPhoto",pickedPhoto))
+    os.rename(
+        os.path.join(photoFolder,pickedPhoto),
+        os.path.join(usedPhotoFolder,pickedPhoto)
+    )
