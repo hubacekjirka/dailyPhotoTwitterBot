@@ -8,7 +8,6 @@ import tweepy
 import os
 import PIL.Image
 
-
 from config import (
     access_token,
     access_token_secret,
@@ -101,38 +100,54 @@ def postMediaUpdate(api,filePath,tweetMessage):
         result=-1
     return result
 
-def resize():
-    pass
-
-### Authenticate using application keys
-auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
-auth.set_access_token(access_token, access_token_secret)
-api = tweepy.API(auth)
-
-
-### pick a photo at random
-photos = [f for f in listdir(photoFolder)]
-pickedPhoto = photos[randint(0,len(photos)-1)]
-
-### get its exif information
-exifData = getExif(os.path.join(photoFolder,pickedPhoto))
-exifSection = getExifSection(exifData)
-hashtags = getHashtags(exifData)
-
-tweetMessage = f"{INTROTEXT} {exifSection} {CLOSURETEXT} {hashtags}"
-
-### post it
-if tweetingEnabled:
-    postStatus = postMediaUpdate(
-        api,
-        os.path.join(photoFolder,pickedPhoto),
-        tweetMessage)
-else:
-    postStatus = -1
-
-### move file, if posting is succesful
-if postStatus == 0:
-    os.rename(
-        os.path.join(photoFolder,pickedPhoto),
-        os.path.join(usedPhotoFolder,pickedPhoto)
+def resize(filePath):
+    img  = Image.open(filePath)
+    resizedImg = img.resize(
+        (round(img.size[0]*.75), round(img.size[1]*.75)),
+        resample = PIL.Image.LANCZOS
     )
+    resizedImg.save(filePath)
+
+
+if __name__ == "__main__":
+    ### Authenticate using application keys
+    auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
+    auth.set_access_token(access_token, access_token_secret)
+    api = tweepy.API(auth)
+
+
+    ### pick a photo at random
+    
+    photos = [f for f in listdir(photoFolder) if f.endswith("jpg")]
+    pickedPhoto = photos[randint(0,len(photos)-1)]
+
+    ### get its exif information
+    exifData = getExif(os.path.join(photoFolder,pickedPhoto))
+    exifSection = getExifSection(exifData)
+    hashtags = getHashtags(exifData)
+
+    # keep resizing until the file is smaller than 3.5MB => Twitter's API limit
+    while os.path.getsize(os.path.join(photoFolder,pickedPhoto)) > 3.5 * 1024 * 1024:
+        resize(os.path.join(photoFolder,pickedPhoto))
+
+    tweetMessage = f"{INTROTEXT} {exifSection} {CLOSURETEXT} {hashtags}"
+
+    if debug:
+        print(tweetMessage)
+
+    ### post it
+    if tweetingEnabled:
+        postStatus = postMediaUpdate(
+            api,
+            os.path.join(photoFolder,pickedPhoto),
+            tweetMessage
+        )
+    else:
+        postStatus = -1
+
+    ### move file, if posting is succesful
+    if postStatus == 0:
+        os.rename(
+            os.path.join(photoFolder,pickedPhoto),
+            os.path.join(usedPhotoFolder,pickedPhoto)
+        )
