@@ -7,6 +7,7 @@ import hashlib
 import tweepy
 import os
 import PIL.Image
+from classify_image import classifyImage
 
 from config import (
     access_token,
@@ -48,6 +49,9 @@ def getPhotosMd5Hash():
 
 def getExif(photoPath):
     img = PIL.Image.open(photoPath)
+    if img._getexif() is None:
+        return {}
+
     exif = {
         PIL.ExifTags.TAGS[k]: v
         for k, v in img._getexif().items()
@@ -56,6 +60,10 @@ def getExif(photoPath):
     return exif
 
 def getExifSection(exifData):
+    # in case no exif data is available, return empty string
+    if len(exifData) == 0:
+        return ""
+
     exifSection = []
 
     if exifData.get("Model"):
@@ -108,6 +116,21 @@ def resize(filePath):
     )
     resizedImg.save(filePath)
 
+def composeTensorflowHashtags(imageClassification):
+    output = []
+    output.append("#tensorflow")
+    output.append("Content prediction:")
+    for node in imageClassification:
+        output.append(f"{format(node[0] * 100, '.0f')}%")
+        for predictedItems in node[1]:
+            for predictedItem in predictedItems.split(','):
+            # get rid of spaces
+                hashtag = f"#{predictedItem.replace(' ','')}"
+                output.append(hashtag)
+
+    output = f"{' '.join(output)}"
+    return output
+
 
 if __name__ == "__main__":
     ### Authenticate using application keys
@@ -126,11 +149,25 @@ if __name__ == "__main__":
     exifSection = getExifSection(exifData)
     hashtags = getHashtags(exifData)
 
-    # keep resizing until the file is smaller than 3.5MB => Twitter's API limit
+    ### call Tensorflow to identify objects in the picture
+    tensorFlowHashtags = ""
+    try:
+        imageClassification = classifyImage(
+            os.path.join(photoFolder,pickedPhoto),
+            "/tmp/imagenet",
+            5)
+        tensorFlowHashtags = composeTensorflowHashtags(imageClassification)
+        
+    except Exception as e:
+        print("An error occured during tensorflow processing")
+        print(e)
+
+    ### keep resizing until the file is smaller than 3.5MB 
+    ###     => Twitter's API limit
     while os.path.getsize(os.path.join(photoFolder,pickedPhoto)) > 3.5 * 1024 * 1024:
         resize(os.path.join(photoFolder,pickedPhoto))
 
-    tweetMessage = f"{INTROTEXT} {exifSection} {CLOSURETEXT} {hashtags}"
+    tweetMessage = f"{INTROTEXT} {exifSection} {CLOSURETEXT} {hashtags} {tensorFlowHashtags}"
 
     if debug:
         print(tweetMessage)
