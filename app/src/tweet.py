@@ -17,8 +17,8 @@ from config import (
 )
 
 CURRENTDIR = os.path.dirname(os.path.realpath(__file__))
-INTROTEXT = "Photo of the day."
-CLOSURETEXT = "By photo of the day Twitter bot (GitHub: http://bit.ly/2YGoHrG)."
+INTROTEXT = "#photoOfTheDay"
+CLOSURETEXT = "Twitter bot (GitHub: http://bit.ly/2YGoHrG)."
 
 debug = True
 tweetingEnabled = True
@@ -72,16 +72,13 @@ def getExifSection(exifData):
     if exifData.get("DateTimeOriginal"):
         exifSection.append(f"sometimes in {exifData.get('DateTimeOriginal')[:4]}")
 
-    if len(exifSection) > 0:
-        exifSection[0] = exifSection[0][:1].upper() + exifSection[0][1:]
-
     output = f"{', '.join(exifSection)}."
     return output
 
 def getHashtags(exifData):
     hashtags = []
 
-    hashtags.append("#photoOfTheDay")
+    hashtags.append("")
 
     if exifData.get("Model"):
         hashtags.append(f"#{exifData.get('Model').replace(' ','')}")
@@ -154,7 +151,7 @@ if __name__ == "__main__":
     try:
         imageClassification = classifyImage(
             os.path.join(photoFolder,pickedPhoto),
-            "/tmp/imagenet",
+            os.path.join(CURRENTDIR,"imagenet"),
             5)
         tensorFlowHashtags = composeTensorflowHashtags(imageClassification)
         
@@ -162,14 +159,17 @@ if __name__ == "__main__":
         print("An error occured during tensorflow processing")
         print(e)
 
-    ### keep resizing until the file is smaller than 3.5MB 
+    ### keep resizing until the file is smaller than 3.5MB and 8192px
     ###     => Twitter's API limit
-    while os.path.getsize(os.path.join(photoFolder,pickedPhoto)) > 3.5 * 1024 * 1024:
+    while (os.path.getsize(os.path.join(photoFolder,pickedPhoto)) > 3.5 * 1024 * 1024
+        or Image.open(os.path.join(photoFolder,pickedPhoto)).size[0] > 8192
+        or Image.open(os.path.join(photoFolder,pickedPhoto)).size[1] > 8192):
         resize(os.path.join(photoFolder,pickedPhoto))
 
     tweetMessage = f"{INTROTEXT} {exifSection} {CLOSURETEXT} {hashtags} {tensorFlowHashtags}"
 
     if debug:
+        print(f"Filename: {pickedPhoto}")
         print(tweetMessage)
 
     ### post it

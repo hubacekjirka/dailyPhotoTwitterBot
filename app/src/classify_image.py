@@ -227,7 +227,10 @@ if __name__ == '__main__':
   parser.add_argument(
       '--model_dir',
       type=str,
-      default='/tmp/imagenet',
+      default=os.path.join(
+        os.path.dirname(os.path.realpath(__file__)),
+        "imagenet"
+      ),
       help="""\
       Path to classify_image_graph_def.pb,
       imagenet_synset_to_human_label_map.txt, and
@@ -247,13 +250,5 @@ if __name__ == '__main__':
       help='Display this many predictions.'
   )
 
-
-  # # FLAGS, unparsed = parser.parse_known_args()
-  # CURRENTDIR = os.path.dirname(os.path.realpath(__file__))
-  # classifyImage(
-  #   os.path.join(CURRENTDIR,"photos","backlog","IMG_4582.jpg"),
-  #   "/tmp/imagenet",
-  #   5)
-  # print(type(FLAGS))
-  # # tf.app.run(main=main, argv=[sys.argv[0]] + unparsed)
-  # tf.app.run(main=main)
+  FLAGS, unparsed = parser.parse_known_args()
+  tf.app.run(main=main, argv=[sys.argv[0]] + unparsed)
