@@ -13,3 +13,8 @@
 │
 └── usedPhoto
         Already posted photo folder
+
+
+
+Thanks to:
+https://towardsdatascience.com/tensorflow-image-recognition-python-api-e35f7d412a70
