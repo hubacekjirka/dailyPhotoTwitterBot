@@ -12,7 +12,8 @@
 ## Install
 
 ```sh
-docker build . --tag hubacekjirka/photooftheday
+git clone https://github.com/hubacekjirka/dailyPhotoTwitterBot.git
+docker build ./dailyPhotoTwitterBot/app --tag hubacekjirka/photooftheday
 ```
 
 ## Usage
