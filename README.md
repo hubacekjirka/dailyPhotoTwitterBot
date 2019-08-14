@@ -23,6 +23,9 @@ Map Docker host photo folder to the guest
 docker run --volume /PathToThePhotoFolder/photos:/app/src/photos \
 -it hubacekjirka/photooftheday
 ```
+The bot expects the following folders in the '/PathToThePhotoFolder/photos' foder:
+- 'backlog' - photos to be posted
+- 'usedPhotos' - succesfully posted photo
 
 ## Author
 
