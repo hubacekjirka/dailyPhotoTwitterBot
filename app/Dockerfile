@@ -1,7 +1,5 @@
 FROM ubuntu:18.04
 
-# RUN apk --update add gcc libgcc musl-dev
-# RUN apk add jpeg-dev zlib-dev
 RUN apt-get update
 RUN apt-get install -y python3-dev python3-pip gcc 
 
@@ -14,4 +12,8 @@ RUN pip3 install -r requirements.txt
 WORKDIR /app/src
 RUN python3 classify_image.py
 
-CMD ["/bin/sh"]
+# Boot into the command shell
+#CMD ["/bin/sh"]
+
+# Fire off twutter bot
+CMD ["python3", "tweet.py"]
