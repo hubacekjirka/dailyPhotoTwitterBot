@@ -18,7 +18,7 @@ from config import (
 
 CURRENTDIR = os.path.dirname(os.path.realpath(__file__))
 INTROTEXT = "#photoOfTheDay"
-CLOSURETEXT = "Twitter bot (GitHub: http://bit.ly/2YGoHrG)."
+CLOSURETEXT = "TwitterBot (GitHub: http://bit.ly/2YGoHrG)"
 
 debug = True
 tweetingEnabled = True
@@ -70,7 +70,7 @@ def getExifSection(exifData):
         exifSection.append(f"shot on {exifData.get('Model')}")
 
     if exifData.get("DateTimeOriginal"):
-        exifSection.append(f"sometimes in {exifData.get('DateTimeOriginal')[:4]}")
+        exifSection.append(f"in {exifData.get('DateTimeOriginal')[:4]}")
 
     output = f"{', '.join(exifSection)}."
     return output
@@ -167,6 +167,8 @@ if __name__ == "__main__":
         resize(os.path.join(photoFolder,pickedPhoto))
 
     tweetMessage = f"{INTROTEXT} {exifSection} {CLOSURETEXT} {hashtags} {tensorFlowHashtags}"
+    if len(tweetMessage) > 275:
+        tweetMessage = f"{tweetMessage[:275]}..."
 
     if debug:
         print(f"Filename: {pickedPhoto}")
