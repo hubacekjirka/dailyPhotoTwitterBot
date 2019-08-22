@@ -3,6 +3,8 @@ config.py
 backlog/
 usedPhoto/
 imagenet
+chatIds.json
+chatIds_baseline.json
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
