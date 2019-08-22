@@ -169,8 +169,6 @@ if __name__ == "__main__":
         resize(os.path.join(photoFolder,pickedPhoto))
 
     postMessage = f"{INTROTEXT} {exifSection} {CLOSURETEXT} {hashtags} {tensorFlowHashtags}"
-    if len(postMessage) > 275:
-        postMessage = f"{postMessage[:275]}..."
 
     if debug:
         print(f"Filename: {pickedPhoto}")
@@ -179,17 +177,23 @@ if __name__ == "__main__":
     ### post it on twitter
     postStatus = 0
     if tweetingEnabled:
+        if len(postMessage) > 275:
+            tweetMessage = f"{postMessage[:275]}..."
+        else:
+            tweetMessage = postMessage
+
         postStatus = postMediaUpdate(
             api,
             os.path.join(photoFolder,pickedPhoto),
-            postMessage
+            tweetMessage
         )
 
     ### post it on telegram - only bother if everythong goes as expected
     if telegramingEnabled and postStatus == 0:
+        telegramMessage = f"{postMessage} | Sent with ❤️"
         postStatus = telegram.sendImage(
             os.path.join(photoFolder,pickedPhoto),
-            postMessage)
+            telegramMessage)
 
     ### move file, if posting is succesful and enabled on all platforms
     if postStatus == 0 and tweetingEnabled and telegramingEnabled:
