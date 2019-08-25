@@ -37,6 +37,7 @@ The bot expects the following folders in the '/PathToThePhotoFolder/photos' fode
 ## Credits
 * kefranabg: [Readme generator](https://github.com/kefranabg/readme-md-generator)
 * Sagar Sharma: [Tensor Flow](https://towardsdatascience.com/tensorflow-image-recognition-python-api-e35f7d412a70)
+* Miguel Garcia: [How to Make a Twitter Bot in Python With Tweepy](https://realpython.com/twitter-bot-python-tweepy/)
 
 ## Show your support
 
