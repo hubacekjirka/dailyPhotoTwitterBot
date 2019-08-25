@@ -1,7 +1,7 @@
 from Photo import Photo
 class Post:
 
-    def __init__(self, photo):
+    def __init__(self, photo: Photo):
         self.photo = photo
         self.introText = "#photoOfTheDay"
         self.exifSection = self.getExifSection()
