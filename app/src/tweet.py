@@ -3,12 +3,13 @@ import random
 
 from Photo import Photo
 from TweetPost import TweetPost
+from TelegramPost import TelegramPost
 
 if __name__ == "__main__":
     CURRENTDIR = os.path.dirname(os.path.realpath(__file__))
     debug = True
     tweetingEnabled = True
-    telegramingEnabled = False
+    telegramingEnabled = True
     photoFolder = os.path.join(CURRENTDIR,"photos","backlog")
     usedPhotoFolder = os.path.join(CURRENTDIR,"photos","usedPhoto")
     
@@ -20,31 +21,34 @@ if __name__ == "__main__":
     )
     
     if debug:
-        print(f"Filename: {pickedPhoto}")   
+        print(f"Filename: {pickedPhoto.photoPath}")   
 
     ### Tweeting
+    tweetPostStatus = 0
     tweet = TweetPost(pickedPhoto)
     if debug:
         print(tweet.tweetPostText)
-    tweetPostStatus = -1
     if tweetingEnabled:
         tweetPostResult, tweetPostStatus = tweet.postTweetPost()
-    if debug:
-        print(tweetPostResult)
-        print(tweetPostStatus)
+        if debug:
+            print(tweetPostResult)
+            print(tweetPostStatus)
 
     ### Telegraming
-
-    ### post it on telegram - only bother if everythong goes as expected
-    # if telegramingEnabled and postStatus == 0:
-    #     telegramMessage = f"{postMessage} | Sent with ❤️"
-    #     postStatus = telegram.sendImage(
-    #         os.path.join(photoFolder,pickedPhoto),
-    #         telegramMessage)
+    telegramPostStatus = 0
+    chatIdFilePath = os.path.join(CURRENTDIR,"photos","chatIds.json")
+    telegramMessage = TelegramPost(pickedPhoto,chatIdFilePath)
+    ### post it on telegram
+    if telegramingEnabled:
+         telegramPostStatus = telegramMessage.postTelegramPost()
 
     ### move file, if posting is succesful and enabled on all platforms
-    if postStatus == 0 and tweetingEnabled and telegramingEnabled:
+    # TODO: verify 
+    if (tweetPostStatus == 0 and 
+        telegramPostStatus == 0 and
+        tweetingEnabled and 
+        telegramingEnabled):
         os.rename(
-            os.path.join(photoFolder,pickedPhoto),
-            os.path.join(usedPhotoFolder,pickedPhoto)
+            os.path.join(pickedPhoto.photoPath),
+            os.path.join(usedPhotoFolder)
         )
