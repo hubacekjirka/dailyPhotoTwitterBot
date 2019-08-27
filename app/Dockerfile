@@ -15,5 +15,5 @@ RUN python3 classify_image.py
 # Boot into the command shell
 #CMD ["/bin/sh"]
 
-# Fire off twutter bot
-CMD ["python3", "tweet.py"]
+# Fire off the bot
+CMD ["python3", "bot.py"]
