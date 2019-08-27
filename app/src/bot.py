@@ -27,27 +27,27 @@ if __name__ == "__main__":
         print(f"Filename: {pickedPhoto.photoPath}")   
 
     ### Tweeting
-    tweetPostStatus = 0
+    tweetPostResult = 0
     tweet = TweetPost(pickedPhoto)
     if debug:
         print(tweet.tweetPostText)
     if tweetingEnabled:
-        tweetPostResult, tweetPostStatus = tweet.postTweetPost()
+        tweetPostResult, tweetPostStatus = tweet.postTweetPost()        
         if debug:
             print(tweetPostResult)
             print(tweetPostStatus)
 
     ### Telegraming
-    telegramPostStatus = 0
+    telegramPostResult = 0
     chatIdFilePath = os.path.join(chatIdFolder, "chatIds.json")
     telegramMessage = TelegramPost(pickedPhoto, chatIdFilePath)
     ### post it on telegram
     if telegramingEnabled:
-         telegramPostStatus = telegramMessage.postTelegramPost()
+         telegramPostResult = telegramMessage.postTelegramPost()
 
     ### move file, if posting is succesful and enabled on all platforms
-    if (tweetPostStatus == 0 and 
-        telegramPostStatus == 0 and
+    if (tweetPostResult == 0 and 
+        telegramPostResult == 0 and
         tweetingEnabled and 
         telegramingEnabled):
         if debug:
