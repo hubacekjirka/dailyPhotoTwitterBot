@@ -10,8 +10,11 @@ if __name__ == "__main__":
     debug = True
     tweetingEnabled = True
     telegramingEnabled = True
+
+    # file paths
     photoFolder = os.path.join(CURRENTDIR,"photos","backlog")
     usedPhotoFolder = os.path.join(CURRENTDIR,"photos","usedPhoto")
+    chatIdFolder = os.path.join(CURRENTDIR,"photos")
     
     ### pick a photo at random and create a photo object
     photos = [f for f in os.listdir(photoFolder) if f.endswith("jpg")]
@@ -36,19 +39,20 @@ if __name__ == "__main__":
 
     ### Telegraming
     telegramPostStatus = 0
-    chatIdFilePath = os.path.join(CURRENTDIR,"photos","chatIds.json")
-    telegramMessage = TelegramPost(pickedPhoto,chatIdFilePath)
+    chatIdFilePath = os.path.join(chatIdFolder, "chatIds.json")
+    telegramMessage = TelegramPost(pickedPhoto, chatIdFilePath)
     ### post it on telegram
     if telegramingEnabled:
          telegramPostStatus = telegramMessage.postTelegramPost()
 
     ### move file, if posting is succesful and enabled on all platforms
-    # TODO: verify 
     if (tweetPostStatus == 0 and 
         telegramPostStatus == 0 and
         tweetingEnabled and 
         telegramingEnabled):
+        if debug:
+            print(f"Moving {pickedPhoto.fileName} to the used photo folder.")
         os.rename(
             os.path.join(pickedPhoto.photoPath),
-            os.path.join(usedPhotoFolder)
+            os.path.join(usedPhotoFolder,pickedPhoto.fileName)
         )

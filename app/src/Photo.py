@@ -23,6 +23,7 @@ class Photo:
     """
     def __init__(self, photoPath):
         self.photoPath = photoPath
+        self.fileName = os.path.basename(photoPath)
         self.resize()
         self.exifData = self.getExif()
         self.exifHashtags = self.getExifHashtags()
