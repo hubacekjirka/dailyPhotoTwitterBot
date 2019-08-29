@@ -1,5 +1,8 @@
 from Photo import Photo
 class Post:
+    """
+        Base class for Tweetpost and Telegrampost
+    """
 
     def __init__(self, photo: Photo):
         self.photo = photo
