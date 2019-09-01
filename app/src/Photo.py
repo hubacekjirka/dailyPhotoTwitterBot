@@ -11,7 +11,8 @@ from config import (
     access_token,
     access_token_secret,
     consumer_key,
-    consumer_secret
+    consumer_secret,
+    debug
 )
 
 class Photo:
