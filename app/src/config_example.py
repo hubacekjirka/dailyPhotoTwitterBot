@@ -8,3 +8,5 @@ access_token = 'ACCESS-TOKEN'
 access_token_secret = 'ACCESSTOKENSECRET'
 
 telegram_token = 'TELEGRAMBOTTOKEN'
+
+debug = True

@@ -4,9 +4,11 @@ from config import (
     access_token,
     access_token_secret,
     consumer_key,
-    consumer_secret
+    consumer_secret,
+    debug
 )
 import tweepy
+from tweepy import TweepError
 
 class TweetPost(Post):
 
@@ -14,6 +16,7 @@ class TweetPost(Post):
         super().__init__(photo)
         self.api = self.getApi()
         self.apiCredentialsValid = self.verifyApiCredentials(self.api)
+        self.place = self.getLocationDetails()
         self.closureText = "TwitterBot (GitHub: http://bit.ly/2YGoHrG)"
         self.tweetPostText = f"{self.introText} " \
             f"{self.exifSection} {self.closureText} " \
@@ -29,46 +32,56 @@ class TweetPost(Post):
     def verifyApiCredentials(self, api):
         try:
             api.verify_credentials()
-            print("Twitter authentication OK")
+            if debug:
+                print("Twitter authentication OK")
             return True
         except:
             print("Error during authentication")
             return False
 
     def getLocationDetails(self):
-        pass
-        # print(getExif(photo)['GPSInfo'][2])
-        # print(getExif(photo)['GPSInfo'][4])
+        # Using Twitter's API to reverse decode photo's coordinates
+        # to location: https://developer.twitter.com/en/docs/geo/places-near-location/api-reference/get-geo-reverse_geocode.html
+        try:
+            gpsInfo = self.photo.getExif().get("GPSInfo")
+            if gpsInfo is None:
+                return None
 
-        # latD = float(getExif(photo)['GPSInfo'][2][0][0]) / float(getExif(photo)['GPSInfo'][2][0][1])
-        # latM = float(getExif(photo)['GPSInfo'][2][1][0]) / float(getExif(photo)['GPSInfo'][2][1][1])
-        # latS = float(getExif(photo)['GPSInfo'][2][2][0]) / float(getExif(photo)['GPSInfo'][2][2][1])
-        # lonD = float(getExif(photo)['GPSInfo'][4][0][0]) / float(getExif(photo)['GPSInfo'][4][0][1])
-        # lonM = float(getExif(photo)['GPSInfo'][4][1][0]) / float(getExif(photo)['GPSInfo'][4][1][1])
-        # lonS = float(getExif(photo)['GPSInfo'][4][2][0]) / float(getExif(photo)['GPSInfo'][4][2][1])
+            latD = float(gpsInfo[2][0][0]) / float(gpsInfo[2][0][1])
+            latM = float(gpsInfo[2][1][0]) / float(gpsInfo[2][1][1])
+            latS = float(gpsInfo[2][2][0]) / float(gpsInfo[2][2][1])
+            lonD = float(gpsInfo[4][0][0]) / float(gpsInfo[4][0][1])
+            lonM = float(gpsInfo[4][1][0]) / float(gpsInfo[4][1][1])
+            lonS = float(gpsInfo[4][2][0]) / float(gpsInfo[4][2][1])
 
+            lat = latD + latM / 60 + latS / 3600
+            lon = lonD + lonM / 60 + lonS / 3600
 
-        # print(latD)
-        # print(latM)
-        # print(latS)
-        # print(lonD)
-        # print(lonM)
-        # print(lonS)
+            # flat earth fix
+            if gpsInfo[1] == "S": 
+                lat = lat * (-1)
+            if gpsInfo[3] == "W":
+                lon = lon * (-1)
+            
+            if debug:
+                print(f"LAT: {lat}")
+                print(f"LON: {lon}")
 
-        # print(latD + latM / 60 + latS / 3600)
-        # print(lonD + lonM / 60 + lonS / 3600)
+            # picking only the first item as it seems to be the most
+            # relevant one
+            return self.api.reverse_geocode(
+                lat = lat,
+                lon = lon,
+                granularity = "admin"
+            )[0]
+        except KeyError as e:
+            print("Geo data not present " + e)
+        except TweepError as e:
+            print("Couldn't resolve location " + str(e.response.content))
+        except Exception as e:
+            print("Couldn't resolve location based on exif's coordinates")
 
-        # aa = api.reverse_geocode(
-        #     lat = "48.166944",
-        #     lon = "11.551667",
-        #     granularity = "admin"
-        #     )
-
-        # print(aa)
-
-        # print(aa[0])
-        # print(aa[0].id)
-        # print(aa[0].full_name)
+        return None
 
     def postTweetPost(self):
         if len(self.tweetPostText) > 275:
@@ -77,6 +90,10 @@ class TweetPost(Post):
         kwargs = {}
         # not today
         kwargs["possibly_sensitive"] = False
+
+        if self.place is not None:
+            kwargs["place_id"] = self.place.id
+
         if self.tweetPostText is not None: 
             kwargs["status"] = self.tweetPostText
 

@@ -1,5 +1,6 @@
 import os
 import random
+from config import debug
 
 from Photo import Photo
 from TweetPost import TweetPost
@@ -7,7 +8,6 @@ from TelegramPost import TelegramPost
 
 if __name__ == "__main__":
     CURRENTDIR = os.path.dirname(os.path.realpath(__file__))
-    debug = True
     tweetingEnabled = True
     telegramingEnabled = True
 
@@ -22,7 +22,7 @@ if __name__ == "__main__":
         photoFolder,
         photos[random.randint(0,len(photos)-1)])
     )
-    
+
     if debug:
         print(f"Filename: {pickedPhoto.photoPath}")   
 
@@ -41,6 +41,9 @@ if __name__ == "__main__":
     telegramPostResult = 0
     chatIdFilePath = os.path.join(chatIdFolder, "chatIds.json")
     telegramMessage = TelegramPost(pickedPhoto, chatIdFilePath)
+    if tweet is not None:
+        if tweet.place is not None:
+            telegramMessage.setLocation(tweet.place.full_name)
     ### post it on telegram
     if telegramingEnabled:
          telegramPostResult = telegramMessage.postTelegramPost()
@@ -56,3 +59,5 @@ if __name__ == "__main__":
             os.path.join(pickedPhoto.photoPath),
             os.path.join(usedPhotoFolder,pickedPhoto.fileName)
         )
+    
+    print(f"So, O-Ren…any more subordinates for me to kill?")

@@ -1,7 +1,8 @@
 from Post import Post
 from Photo import Photo
 from config import (
-    telegram_token
+    telegram_token,
+    debug
 )
 import requests, urllib, json, time, os
 
@@ -12,9 +13,19 @@ class TelegramPost(Post):
         self.chatIdFilePath = chatIdFilePath
         self.chatIds = self.updateAndGetRecipientList(self.chatIdFilePath)
         self.closureText = "TelegramBot (GitHub: http://bit.ly/2YGoHrG)"
-        self.telegramPostText = f"{self.introText} " \
+        self.locationName = None
+        self.telegramPostText = self.composeTelegramPostText()
+
+    def composeTelegramPostText(self):
+        if self.locationName is not None: 
+            locationSection = f"Shot in {self.locationName} "
+        else:
+            locationSection = ""
+
+        return f"{self.introText} " \
             f"{self.exifSection} {self.closureText} " \
-            f"{photo.exifHashtags} {photo.tensorFlowHashtags} " \
+            f"{self.photo.exifHashtags} {self.photo.tensorFlowHashtags} " \
+            f"{locationSection}" \
             f"| Sent with ❤️"
 
     def updateAndGetRecipientList(self, chatIdFilePath):
@@ -46,7 +57,12 @@ class TelegramPost(Post):
 
         return chatIds
 
+    def setLocation(self, locationName):
+        self.locationName = locationName
+
     def postTelegramPost(self):
+        # refresh telegram's message
+        self.telegramPostText =  self.composeTelegramPostText()
         result = 0
         try:
             # 

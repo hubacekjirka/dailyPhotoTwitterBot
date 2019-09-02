@@ -3,18 +3,16 @@ from PIL.ExifTags import TAGS
 from os import listdir
 from random import randint
 import sys
-import hashlib
-import tweepy
 import os
 import PIL.Image
-import telegram
 from classify_image import classifyImage
 
 from config import (
     access_token,
     access_token_secret,
     consumer_key,
-    consumer_secret
+    consumer_secret,
+    debug
 )
 
 class Photo:
