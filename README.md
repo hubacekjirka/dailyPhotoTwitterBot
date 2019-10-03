@@ -7,6 +7,10 @@
 
 > A Twitter bot, posting a random photo from the predefined folder. Additional to the picture, it attempts to gather other image metadata from its EXIF data and image content recognition using TensorFlow. The metadata is introduced as hashtags for reaching a broader audience, because who doesn't like likes and hearts <3
 
+> Tweet example: 
+
+> <img alt="Example" src="https://github.com/hubacekjirka/dailyPhotoTwitterBot/blob/example-in-readme/example.png?raw=true" width="50%" height="50%"/>
+
 ### 🏠 [Homepage](http://blog.hubacek.uk)
 
 ## Install
