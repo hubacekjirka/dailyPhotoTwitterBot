@@ -9,7 +9,7 @@
 
 > Tweet example: 
 
-> <img alt="Example" src="https://github.com/hubacekjirka/dailyPhotoTwitterBot/blob/example-in-readme/example.png?raw=true" width="50%" height="50%"/>
+> <img src="https://github.com/hubacekjirka/dailyPhotoTwitterBot/blob/master/example.png?raw=true" width="50%" height="50%"/>
 
 ### 🏠 [Homepage](http://blog.hubacek.uk)
 
