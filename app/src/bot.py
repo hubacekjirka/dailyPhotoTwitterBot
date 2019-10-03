@@ -17,7 +17,8 @@ if __name__ == "__main__":
     chatIdFolder = os.path.join(CURRENTDIR,"photos")
     
     ### pick a photo at random and create a photo object
-    photos = [f for f in os.listdir(photoFolder) if f.endswith("jpg")]
+    photos = [f for f in os.listdir(photoFolder) if f.endswith("jpg") or f.endswith("jpeg")]
+    #TODO: exit when there're no photos in the folder
     pickedPhoto = Photo(os.path.join(
         photoFolder,
         photos[random.randint(0,len(photos)-1)])
