@@ -36,7 +36,7 @@ if __name__ == "__main__":
         tweetPostResult, tweetPostStatus = tweet.postTweetPost()        
         if debug:
             print(tweetPostResult)
-            print(tweetPostStatus)
+            print(str(tweetPostStatus).encode("utf-8"))
 
     ### Telegraming
     telegramPostResult = 0
@@ -61,4 +61,4 @@ if __name__ == "__main__":
             os.path.join(usedPhotoFolder,pickedPhoto.fileName)
         )
     
-    print(f"So, O-Ren…any more subordinates for me to kill?")
+    print(f"So, O-Ren...any more subordinates for me to kill?")
