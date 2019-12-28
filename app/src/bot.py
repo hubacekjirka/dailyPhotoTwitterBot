@@ -1,27 +1,27 @@
 import os
 import random
-from config import debug
+from config import (
+    debug,
+    tweetingEnabled,
+    telegramingEnabled,
+    chatIdFolder
+)
 
 from Photo import Photo
 from TweetPost import TweetPost
 from TelegramPost import TelegramPost
+from PhotoPicker import PhotoPicker
 
 if __name__ == "__main__":
     CURRENTDIR = os.path.dirname(os.path.realpath(__file__))
-    tweetingEnabled = True
-    telegramingEnabled = True
+    photoPicker = PhotoPicker(CURRENTDIR)
 
-    # file paths
-    photoFolder = os.path.join(CURRENTDIR,"photos","backlog")
-    usedPhotoFolder = os.path.join(CURRENTDIR,"photos","usedPhoto")
-    chatIdFolder = os.path.join(CURRENTDIR,"photos")
+    pickedPhoto = photoPicker.getPhotoPath()
     
-    ### pick a photo at random and create a photo object
-    photos = [f for f in os.listdir(photoFolder) if f.endswith("jpg") or f.endswith("jpeg")]
     #TODO: exit when there're no photos in the folder
     pickedPhoto = Photo(os.path.join(
-        photoFolder,
-        photos[random.randint(0,len(photos)-1)])
+        photoPicker.photoFolder,
+        pickedPhoto)
     )
 
     if debug:
@@ -58,7 +58,7 @@ if __name__ == "__main__":
             print(f"Moving {pickedPhoto.fileName} to the used photo folder.")
         os.rename(
             os.path.join(pickedPhoto.photoPath),
-            os.path.join(usedPhotoFolder,pickedPhoto.fileName)
+            os.path.join(photoPicker.usedPhotoFolder,pickedPhoto.fileName)
         )
     
     print(f"So, O-Ren...any more subordinates for me to kill?")
