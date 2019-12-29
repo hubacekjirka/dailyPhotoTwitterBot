@@ -4,26 +4,36 @@ from config import (
     awsBucket,
     photoSource
 )
+from Photo import Photo
 import requests
 import os
 import boto3
 import random
-
 
 class PhotoPicker:
     def __init__(self, currentDir):
         # file paths
         self.photoFolder = os.path.join(currentDir,"photos","backlog")
         self.usedPhotoFolder = os.path.join(currentDir,"photos","usedPhoto")
-        self.chatIdFolder = os.path.join(currentDir,"photos")
+        self.pickedPhotoPath = None
+        self.pickedPhoto = None
 
-    def getPhotoPath(self):
+    def getPhoto(self):
         if photoSource == "S3":
             self.getPhotoFromS3()
 
         ### pick a photo at random and create a photo object
         photos = [f for f in os.listdir(self.photoFolder) if f.endswith("jpg") or f.endswith("jpeg")]
-        return photos[random.randint(0,len(photos)-1)]
+        photo = photos[random.randint(0,len(photos)-1)]
+        
+        #TODO: raise exception when there're no photos in the folder
+
+        self.pickedPhoto = Photo(os.path.join(
+            self.photoFolder,
+            photo)
+        )
+        
+        return self.pickedPhoto
 
     def getPhotoFromS3(self):
         s3 = boto3.client('s3', 
@@ -40,7 +50,7 @@ class PhotoPicker:
 
         pickedFile = random.choice(filesOnly)
         pickedFileName = pickedFile["Key"].split("/")[-1]
-        pickedFileKey = str(pickedFile["Key"])
+        pickedFileKey = pickedFile["Key"]
 
         filePath = os.path.join(self.photoFolder,pickedFileName)
         s3.download_file(awsBucket,pickedFileKey , filePath)

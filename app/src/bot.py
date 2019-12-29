@@ -1,5 +1,6 @@
 import os
 import random
+import sys
 from config import (
     debug,
     tweetingEnabled,
@@ -15,19 +16,19 @@ from PhotoPicker import PhotoPicker
 if __name__ == "__main__":
     CURRENTDIR = os.path.dirname(os.path.realpath(__file__))
     photoPicker = PhotoPicker(CURRENTDIR)
-
-    pickedPhoto = photoPicker.getPhotoPath()
     
-    #TODO: exit when there're no photos in the folder
-    pickedPhoto = Photo(os.path.join(
-        photoPicker.photoFolder,
-        pickedPhoto)
-    )
+    try:
+        pickedPhoto = photoPicker.getPhoto()
+    except Exception as e:
+        print(e)
+        sys.exit()
+    
 
     if debug:
-        print(f"Filename: {pickedPhoto.photoPath}")   
+        print(f"Filename: {pickedPhoto.fileName}")   
 
     ### Tweeting
+    #TODO: Wrap this in try-except
     tweetPostResult = 0
     tweet = TweetPost(pickedPhoto)
     if debug:
@@ -39,6 +40,7 @@ if __name__ == "__main__":
             print(str(tweetPostStatus).encode("utf-8"))
 
     ### Telegraming
+    #TODO: Wrap this in try-except
     telegramPostResult = 0
     chatIdFilePath = os.path.join(chatIdFolder, "chatIds.json")
     telegramMessage = TelegramPost(pickedPhoto, chatIdFilePath)
