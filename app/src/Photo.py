@@ -17,7 +17,7 @@ from config import (
 
 class Photo:
     """
-    Photo object
+    Photo class
     """
     def __init__(self, photoPath):
         self.photoPath = photoPath

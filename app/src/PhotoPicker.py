@@ -12,7 +12,16 @@ import random
 
 class PhotoPicker:
     def __init__(self, currentDir):
-        # file paths
+        """
+        Constructs a PhotoPicker object.
+        Sets filesystem paths to the instance variables.
+        
+        Parameters
+        ----------
+        currentDir : str
+            Path to the root folder of the application containing
+            necessary photo folders.
+        """
         self.photoFolder = os.path.join(currentDir,"photos","backlog")
         self.usedPhotoFolder = os.path.join(currentDir,"photos","usedPhoto")
         self.pickedPhotoPath = None
@@ -56,5 +65,22 @@ class PhotoPicker:
         s3.download_file(awsBucket,pickedFileKey , filePath)
         print('done')
 
-        #TODO: Copy the photo
-        #TODO: Delete the photo
+    
+    def copyPhotoToArchive(self):
+        """
+        Move photo file to the archive folder
+        """
+        os.rename(
+            os.path.join(self.pickedPhoto.photoPath),
+            os.path.join(
+                self.usedPhotoFolder,
+                self.pickedPhoto.fileName)
+        )
+
+    #TODO: Copy the photo
+    def copyPhotoToArchiveS3(self):
+        pass
+    
+    #TODO: Delete the photo
+    def removePhotoFromBacklogS3(self):
+        pass
