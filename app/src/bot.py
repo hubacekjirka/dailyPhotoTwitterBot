@@ -13,6 +13,10 @@ from TweetPost import TweetPost
 from TelegramPost import TelegramPost
 from PhotoPicker import PhotoPicker
 
+#TODO
+# IMG_8953.jpeg produces:
+# #photoOfTheDay !!!None!!! TwitterBot (GitHub: http://bit.ly/2YGoHrG)  #tensorflow Content prediction: 98% #koala #koalabear #kangaroobear #nativebear #Phascolarctoscinereus 0% #indri #indris #Indriindri #Indribrevicaudatus 0% #wombat 0% #Madagascarcat #ring-tailedlemur #Lemurcatta 0% #three-toedsloth #ai #Bradypustridactylus
+
 if __name__ == "__main__":
     ### Picks a photo from the backlog's photo folder and stores in as a Photo object.
     ### Optionally: gets photo from S3
@@ -69,10 +73,13 @@ if __name__ == "__main__":
             telegramingEnabled):
             if debug:
                 print(f"Moving {pickedPhoto.fileName} to the used photo folder.")
+            
             # if everything goes well, move the photo file to the the 
             # archive folders
-
             photoPicker.copyPhotoToArchive()
+
+            photoPicker.copyPhotoToArchiveS3()
+            photoPicker.removePhotoFromBacklogS3()
     except Exception as e:
         print(e)
         sys.exit()

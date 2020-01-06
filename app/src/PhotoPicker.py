@@ -24,8 +24,8 @@ class PhotoPicker:
         """
         self.photoFolder = os.path.join(currentDir,"photos","backlog")
         self.usedPhotoFolder = os.path.join(currentDir,"photos","usedPhoto")
-        self.pickedPhotoPath = None
         self.pickedPhoto = None
+        self.s3ClientHandle = None
 
     def getPhoto(self):
         if photoSource == "S3":
@@ -44,11 +44,22 @@ class PhotoPicker:
         
         return self.pickedPhoto
 
-    def getPhotoFromS3(self):
-        s3 = boto3.client('s3', 
+    def createS3ClientHandle(self):
+        return boto3.client('s3', 
             aws_access_key_id=awsAccessKey, 
             aws_secret_access_key=awsKeyId
         )
+
+    #TODO: Fix this, always creates new handle
+    def getS3ClientHandle(self):
+        if self.s3ClientHandle is None:
+            return self.createS3ClientHandle()
+        else:
+            return self.s3ClientHandle
+
+
+    def getPhotoFromS3(self):
+        s3 = self.getS3ClientHandle()
 
         allObjects = s3.list_objects_v2(Bucket = awsBucket, Prefix = 'backlog')        
         # Size: 0 ~ folder object 
@@ -79,8 +90,20 @@ class PhotoPicker:
 
     #TODO: Copy the photo
     def copyPhotoToArchiveS3(self):
-        pass
+        if photoSource == "S3":
+            s3 = self.getS3ClientHandle()
+            copy_source = {
+                'Bucket': awsBucket,
+                'Key': 'backlog' + '/' + self.pickedPhoto.fileName
+            }
+            s3.copy(copy_source, awsBucket, 'usedPhoto' + '/' + self.pickedPhoto.fileName)
     
     #TODO: Delete the photo
     def removePhotoFromBacklogS3(self):
-        pass
+        if photoSource == "S3":
+            s3 = self.getS3ClientHandle()
+            s3.delete_object(
+                Bucket = awsBucket,
+                Key = 'backlog' + '/' + self.pickedPhoto.fileName,
+            )
+            
