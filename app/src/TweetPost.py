@@ -43,7 +43,7 @@ class TweetPost(Post):
         # Using Twitter's API to reverse decode photo's coordinates
         # to location: https://developer.twitter.com/en/docs/geo/places-near-location/api-reference/get-geo-reverse_geocode.html
         try:
-            gpsInfo = self.photo.getExif().get("GPSInfo")
+            gpsInfo = self.photo.exifData.get("GPSInfo")
             if gpsInfo is None:
                 return None
 

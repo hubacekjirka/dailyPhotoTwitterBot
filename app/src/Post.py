@@ -11,7 +11,7 @@ class Post:
 
     def getExifSection(self):
         if len(self.photo.exifData) == 0:
-            return None
+            return ""
 
         exifSectionElements = []
         if self.photo.exifData.get("Model"):
