@@ -73,7 +73,7 @@ class PhotoPicker:
         pickedFileKey = pickedFile["Key"]
 
         filePath = os.path.join(self.photoFolder,pickedFileName)
-        s3.download_file(awsBucket,pickedFileKey , filePath)
+        s3.download_file(awsBucket,pickedFileKey, filePath)
         print('done')
 
     
