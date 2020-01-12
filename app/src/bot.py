@@ -24,11 +24,13 @@ if __name__ == "__main__":
         CURRENTDIR = os.path.dirname(os.path.realpath(__file__))
         # initialize a PhotoPicker object, sets paths
         photoPicker = PhotoPicker(CURRENTDIR)
+
         # Retrieves a photo file and creates a photo object
         pickedPhoto = photoPicker.getPhoto()
+
     except Exception as e:
-        print("Couldn't retrieve the photo file.")
         print(e)
+        print("Couldn't retrieve the photo file.")
         sys.exit()
     
     if debug:
