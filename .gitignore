@@ -1,7 +1,7 @@
 config.py
 .vscode
-backlog/
-usedPhoto/
+*.jpg
+*.jpeg
 imagenet
 chatIds.json
 chatIds_baseline.json
