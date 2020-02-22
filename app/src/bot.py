@@ -13,13 +13,10 @@ from TweetPost import TweetPost
 from TelegramPost import TelegramPost
 from PhotoPicker import PhotoPicker
 
-#TODO
-# IMG_8953.jpeg produces:
-# #photoOfTheDay !!!None!!! TwitterBot (GitHub: http://bit.ly/2YGoHrG)  #tensorflow Content prediction: 98% #koala #koalabear #kangaroobear #nativebear #Phascolarctoscinereus 0% #indri #indris #Indriindri #Indribrevicaudatus 0% #wombat 0% #Madagascarcat #ring-tailedlemur #Lemurcatta 0% #three-toedsloth #ai #Bradypustridactylus
-
 if __name__ == "__main__":
-    ### Picks a photo from the backlog's photo folder and stores in as a Photo object.
-    ### Optionally: gets photo from S3
+    ### Picks a photo from the backlog's photo folder and stores it
+    ### as a Photo object.
+    ###     Optionally: gets photo from S3
     try:
         CURRENTDIR = os.path.dirname(os.path.realpath(__file__))
         # initialize a PhotoPicker object, sets paths
@@ -48,7 +45,7 @@ if __name__ == "__main__":
                 print(tweetPostResult)
                 print(str(tweetPostStatus).encode("utf-8"))
     except Exception as e:
-        print(e)
+        print(f"Error occured during tweeting. Error: {e}")
         sys.exit()
 
     ### Telegraming
@@ -63,7 +60,7 @@ if __name__ == "__main__":
         if telegramingEnabled:
             telegramPostResult = telegramMessage.postTelegramPost()
     except Exception as e:
-        print(e)
+        print(f"Error occured during telegramming. Error: {e}")
         sys.exit()
 
     ### move file, if posting is succesful and enabled on all platforms

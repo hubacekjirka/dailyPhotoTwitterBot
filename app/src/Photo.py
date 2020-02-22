@@ -50,9 +50,9 @@ class Photo:
         return exifHashtags
 
     def resize(self):
-        ### keep resizing until the file is smaller than 3.5MB and 8192px
+        ### keep resizing until the file is smaller than 3MB and 8192px
         ###     => Twitter's API limit
-        while (os.path.getsize(self.photoPath) > 3.5 * 1024 * 1024
+        while (os.path.getsize(self.photoPath) >= 3 * 1024 * 1024
             or Image.open(self.photoPath).size[0] > 8192
             or Image.open(self.photoPath).size[1] > 8192):
 
