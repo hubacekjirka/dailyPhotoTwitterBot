@@ -17,7 +17,7 @@ class TweetPost(Post):
         self.api = self.getApi()
         self.apiCredentialsValid = self.verifyApiCredentials(self.api)
         self.place = self.getLocationDetails()
-        self.closureText = "TwitterBot (GitHub: http://bit.ly/2YGoHrG)"
+        self.closureText = "TwitterBot (GitHub: http://bit.ly/PotDGithub)"
         self.tweetPostText = f"{self.introText} " \
             f"{self.exifSection} {self.closureText} " \
             f"{photo.exifHashtags} {photo.tensorFlowHashtags}"

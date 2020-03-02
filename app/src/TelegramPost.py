@@ -12,7 +12,7 @@ class TelegramPost(Post):
         super().__init__(photo)
         self.chatIdFilePath = chatIdFilePath
         self.chatIds = self.updateAndGetRecipientList(self.chatIdFilePath)
-        self.closureText = "TelegramBot (GitHub: http://bit.ly/2YGoHrG)"
+        self.closureText = "TelegramBot (GitHub: http://bit.ly/PotDGithub)"
         self.locationName = None
         self.telegramPostText = self.composeTelegramPostText()
 
