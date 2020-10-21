@@ -5,6 +5,7 @@ from classify_image import classifyImage
 import logging
 
 LOGGER = logging.getLogger(__name__)
+LOGGER.setLevel("DEBUG")
 
 
 class Photo:
@@ -23,9 +24,10 @@ class Photo:
     def getExif(self):
         img = PIL.Image.open(self.photoPath)
         if img._getexif() is None:
+            LOGGER.debug("No exif data found")
             return {}
 
-        LOGGGER.debug(f"Available exif tags: {img._getexif().items()}")
+        LOGGER.debug(f"Available exif tags: {img._getexif().items()}")
 
         exif = {
             PIL.ExifTags.TAGS[k]: v

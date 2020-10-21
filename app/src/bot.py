@@ -2,14 +2,28 @@ import os
 import sys
 import logging
 
-from config import debug, tweetingEnabled, telegramingEnabled, chatIdFolder
+from config import tweetingEnabled, telegramingEnabled, chatIdFolder
 from TweetPost import TweetPost
+
 from TelegramPost import TelegramPost
 from PhotoPicker import PhotoPicker
 
-LOGGER = logging.getLogger(__name__)
+LOGGER = logging.getLogger(__file__)
+LOGGER.setLevel("DEBUG")
+
+logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s %(levelname)s %(funcName)s: %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S",)
 
 if __name__ == "__main__":
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s %(levelname)s %(funcName)s: %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S",
+    )
+    LOGGER.info("Bot started")
+
     # Picks a photo from the backlog's photo folder and stores it
     # as a Photo object.
     #     Optionally: gets photo from S3
@@ -25,8 +39,7 @@ if __name__ == "__main__":
         LOGGER.error(f"Couldn't retrieve the photo file. Error: {e}")
         sys.exit()
 
-    if debug:
-        LOGGER.info(f"Filename: {pickedPhoto.fileName}")
+    LOGGER.debug(f"Filename: {pickedPhoto.fileName}")
 
     # Tweeting
     try:
@@ -67,8 +80,8 @@ if __name__ == "__main__":
             and tweetingEnabled
             and telegramingEnabled
         ):
-            if debug:
-                LOGGER.info(f"Moving {pickedPhoto.fileName} to the used photo folder.")
+
+            LOGGER.debug(f"Moving {pickedPhoto.fileName} to the used photo folder.")
 
             # if everything goes well, move the photo file to the the
             # archive folders
@@ -77,7 +90,7 @@ if __name__ == "__main__":
             photoPicker.copyPhotoToArchiveS3()
             photoPicker.removePhotoFromBacklogS3()
     except Exception as e:
-        LOGGER.info(e)
+        LOGGER.error(e)
         sys.exit()
 
     LOGGER.info("So, O-Ren...any more subordinates for me to kill?")

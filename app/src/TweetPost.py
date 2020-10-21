@@ -5,25 +5,31 @@ from config import (
     access_token_secret,
     consumer_key,
     consumer_secret,
-    debug
+    debug,
 )
 import tweepy
 from tweepy import TweepError
+import logging
+
+LOGGER = logging.getLogger(__name__)
+LOGGER.setLevel("DEBUG")
+
 
 class TweetPost(Post):
-
     def __init__(self, photo: Photo):
         super().__init__(photo)
         self.api = self.getApi()
         self.apiCredentialsValid = self.verifyApiCredentials(self.api)
         self.place = self.getLocationDetails()
         self.closureText = "TwitterBot (GitHub: http://bit.ly/PotDGithub)"
-        self.tweetPostText = f"{self.introText} " \
-            f"{self.exifSection} {self.closureText} " \
+        self.tweetPostText = (
+            f"{self.introText} "
+            f"{self.exifSection} {self.closureText} "
             f"{photo.exifHashtags} {photo.tensorFlowHashtags}"
+        )
 
     def getApi(self):
-        ### Authenticate using application keys
+        # Authenticate using application keys
         auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
         auth.set_access_token(access_token, access_token_secret)
         api = tweepy.API(auth)
@@ -32,11 +38,11 @@ class TweetPost(Post):
     def verifyApiCredentials(self, api):
         try:
             api.verify_credentials()
-            if debug:
-                print("Twitter authentication OK")
+            LOGGER.debug("Twitter authentication OK")
             return True
-        except:
-            print("Error during authentication")
+
+        except Exception as e:
+            LOGGER.error(f"Error during authentication, error: {e}")
             return False
 
     def getLocationDetails(self):
@@ -58,28 +64,23 @@ class TweetPost(Post):
             lon = lonD + lonM / 60 + lonS / 3600
 
             # flat earth fix
-            if gpsInfo[1] == "S": 
+            if gpsInfo[1] == "S":
                 lat = lat * (-1)
             if gpsInfo[3] == "W":
                 lon = lon * (-1)
-            
-            if debug:
-                print(f"LAT: {lat}")
-                print(f"LON: {lon}")
+
+            LOGGER.debug(f"LAT: {lat}")
+            LOGGER.debug(f"LON: {lon}")
 
             # picking only the first item as it seems to be the most
             # relevant one
-            return self.api.reverse_geocode(
-                lat = lat,
-                lon = lon,
-                granularity = "admin"
-            )[0]
+            return self.api.reverse_geocode(lat=lat, lon=lon, granularity="admin")[0]
         except KeyError as e:
-            print("Geo data not present " + e)
+            LOGGER.error("Geo data not present " + e)
         except TweepError as e:
-            print("Couldn't resolve location " + str(e.response.content))
+            LOGGER.error("Couldn't resolve location " + str(e.response.content))
         except Exception as e:
-            print("Couldn't resolve location based on exif's coordinates")
+            LOGGER.error(f"Couldn't resolve location based on exif's coordinates, error: {e}")
 
         return None
 
@@ -94,18 +95,15 @@ class TweetPost(Post):
         if self.place is not None:
             kwargs["place_id"] = self.place.id
 
-        if self.tweetPostText is not None: 
+        if self.tweetPostText is not None:
             kwargs["status"] = self.tweetPostText
 
         postResult = -1
         postStatus = None
         try:
-            postStatus = self.api.update_with_media(
-                self.photo.photoPath,
-                **kwargs
-            )
+            postStatus = self.api.update_with_media(self.photo.photoPath, **kwargs)
             postResult = 0
         except Exception as e:
-            print(e)
+            LOGGER.error(e)
 
         return postResult, postStatus
