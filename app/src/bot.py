@@ -1,22 +1,32 @@
 import os
-import random
 import sys
-from config import (
-    debug,
-    tweetingEnabled,
-    telegramingEnabled,
-    chatIdFolder
-)
+import logging
 
-from Photo import Photo
+from config import tweetingEnabled, telegramingEnabled, chatIdFolder
 from TweetPost import TweetPost
+
 from TelegramPost import TelegramPost
 from PhotoPicker import PhotoPicker
 
+LOGGER = logging.getLogger(__file__)
+LOGGER.setLevel("DEBUG")
+
+logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s %(levelname)s %(funcName)s: %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S",)
+
 if __name__ == "__main__":
-    ### Picks a photo from the backlog's photo folder and stores it
-    ### as a Photo object.
-    ###     Optionally: gets photo from S3
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s %(levelname)s %(funcName)s: %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S",
+    )
+    LOGGER.info("Bot started")
+
+    # Picks a photo from the backlog's photo folder and stores it
+    # as a Photo object.
+    #     Optionally: gets photo from S3
     try:
         CURRENTDIR = os.path.dirname(os.path.realpath(__file__))
         # initialize a PhotoPicker object, sets paths
@@ -26,29 +36,27 @@ if __name__ == "__main__":
         pickedPhoto = photoPicker.getPhoto()
 
     except Exception as e:
-        print(e)
-        print("Couldn't retrieve the photo file.")
+        LOGGER.error(f"Couldn't retrieve the photo file. Error: {e}")
         sys.exit()
-    
-    if debug:
-        print(f"Filename: {pickedPhoto.fileName}")   
 
-    ### Tweeting
+    LOGGER.debug(f"Filename: {pickedPhoto.fileName}")
+
+    # Tweeting
     try:
         tweetPostResult = 0
         tweet = TweetPost(pickedPhoto)
-        if debug:
-            print(tweet.tweetPostText)
+        LOGGER.debug(tweet.tweetPostText)
+
         if tweetingEnabled:
-            tweetPostResult, tweetPostStatus = tweet.postTweetPost()        
-            if debug:
-                print(tweetPostResult)
-                print(str(tweetPostStatus).encode("utf-8"))
+            tweetPostResult, tweetPostStatus = tweet.postTweetPost()
+            LOGGER.debug(tweetPostResult)
+            LOGGER.debug(str(tweetPostStatus).encode("utf-8"))
+
     except Exception as e:
-        print(f"Error occured during tweeting. Error: {e}")
+        LOGGER.info(f"Error occured during tweeting. Error: {e}")
         sys.exit()
 
-    ### Telegraming
+    # Telegraming
     try:
         telegramPostResult = 0
         chatIdFilePath = os.path.join(chatIdFolder, "chatIds.json")
@@ -56,31 +64,33 @@ if __name__ == "__main__":
         if tweet is not None:
             if tweet.place is not None:
                 telegramMessage.setLocation(tweet.place.full_name)
-        ### post it on telegram
+        # post it on telegram
         if telegramingEnabled:
             telegramPostResult = telegramMessage.postTelegramPost()
     except Exception as e:
-        print(f"Error occured during telegramming. Error: {e}")
+        LOGGER.info(f"Error occured during telegramming. Error: {e}")
         sys.exit()
 
-    ### move file, if posting is succesful and enabled on all platforms
-    #TODO: refactor this in the "future" to instance variables
+    # move file, if posting is succesful and enabled on all platforms
+    # TODO: refactor this in the "future" to instance variables
     try:
-        if (tweetPostResult == 0 and 
-            telegramPostResult == 0 and
-            tweetingEnabled and 
-            telegramingEnabled):
-            if debug:
-                print(f"Moving {pickedPhoto.fileName} to the used photo folder.")
-            
-            # if everything goes well, move the photo file to the the 
+        if (
+            tweetPostResult == 0
+            and telegramPostResult == 0
+            and tweetingEnabled
+            and telegramingEnabled
+        ):
+
+            LOGGER.debug(f"Moving {pickedPhoto.fileName} to the used photo folder.")
+
+            # if everything goes well, move the photo file to the the
             # archive folders
             photoPicker.copyPhotoToArchive()
 
             photoPicker.copyPhotoToArchiveS3()
             photoPicker.removePhotoFromBacklogS3()
     except Exception as e:
-        print(e)
+        LOGGER.error(e)
         sys.exit()
-    
-    print(f"So, O-Ren...any more subordinates for me to kill?")
+
+    LOGGER.info("So, O-Ren...any more subordinates for me to kill?")

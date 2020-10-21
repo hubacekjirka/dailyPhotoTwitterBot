@@ -1,13 +1,18 @@
 from Post import Post
 from Photo import Photo
-from config import (
-    telegram_token,
-    debug
-)
-import requests, urllib, json, time, os
+from config import telegram_token
+import requests
+import urllib
+import json
+import time
+import os
+import logging
+
+LOGGER = logging.getLogger(__name__)
+LOGGER.setLevel("DEBUG")
+
 
 class TelegramPost(Post):
-
     def __init__(self, photo: Photo, chatIdFilePath):
         super().__init__(photo)
         self.chatIdFilePath = chatIdFilePath
@@ -17,16 +22,18 @@ class TelegramPost(Post):
         self.telegramPostText = self.composeTelegramPostText()
 
     def composeTelegramPostText(self):
-        if self.locationName is not None: 
+        if self.locationName is not None:
             locationSection = f"Shot in {self.locationName} "
         else:
             locationSection = ""
 
-        return f"{self.introText} " \
-            f"{self.exifSection} {self.closureText} " \
-            f"{self.photo.exifHashtags} {self.photo.tensorFlowHashtags} " \
-            f"{locationSection}" \
+        return (
+            f"{self.introText} "
+            f"{self.exifSection} {self.closureText} "
+            f"{self.photo.exifHashtags} {self.photo.tensorFlowHashtags} "
+            f"{locationSection}"
             f"| Sent with ❤️"
+        )
 
     def updateAndGetRecipientList(self, chatIdFilePath):
         # Download updated from the Telegram's bot API
@@ -40,8 +47,11 @@ class TelegramPost(Post):
         # conversations only ~ a private message sent from users asking bot
         # to be subscribed to the daily delivery
         chatIds = set(
-            [message["message"]["chat"]["id"] for message in data["result"]
-                if message["message"]["chat"]["type"] == "private"]
+            [
+                message["message"]["chat"]["id"]
+                for message in data["result"]
+                if message["message"]["chat"]["type"] == "private"
+            ]
         )
 
         # Retrieve preserved chatIds from the existing json file
@@ -49,11 +59,11 @@ class TelegramPost(Post):
             with open(chatIdFilePath) as jsonData:
                 jsonContent = json.load(jsonData)
                 # Put chatIds into the existing chatIds set
-                list(map(lambda x: chatIds.add(x) , jsonContent["chatIds"]))
+                list(map(lambda x: chatIds.add(x), jsonContent["chatIds"]))
 
         # Save all chatIds to the JSON file
-        with open(chatIdFilePath, 'w') as jsonData:
-            jsonData.write(json.dumps({"chatIds":list(chatIds)}))
+        with open(chatIdFilePath, "w") as jsonData:
+            jsonData.write(json.dumps({"chatIds": list(chatIds)}))
 
         return chatIds
 
@@ -62,33 +72,31 @@ class TelegramPost(Post):
 
     def postTelegramPost(self):
         # refresh telegram's message
-        self.telegramPostText =  self.composeTelegramPostText()
+        self.telegramPostText = self.composeTelegramPostText()
         result = 0
         try:
-            # 
+            #
             # https://core.telegram.org/bots/faq#how-can-i-message-all-of-my-bot-39s-subscribers-at-once
             # How can I message all of my bot's subscribers at once?
-            # Unfortunately, at this moment we don't have methods for sending bulk 
+            # Unfortunately, at this moment we don't have methods for sending bulk
             # messages, e.g. notifications. We may add something along these lines in the future.
 
-            # In order to avoid hitting our limits when sending out mass notifications, consider 
-            # spreading them over longer intervals, e.g. 8-12 hours. The API will not allow more than ~30 messages 
+            # In order to avoid hitting our limits when sending out mass notifications, consider
+            # spreading them over longer intervals, e.g. 8-12 hours. The API will not allow more than ~30 messages
             # to different users per second, if you go over that, you'll start getting 429 errors.
-            
+
             # push the message to every chatId
             for chatId in self.chatIds:
                 url = f"https://api.telegram.org/bot{telegram_token}/sendPhoto"
-                files = {'photo': open(self.photo.photoPath, 'rb')}
-                data = {
-                    "chat_id" : chatId,
-                    "caption" : self.telegramPostText}
+                files = {"photo": open(self.photo.photoPath, "rb")}
+                data = {"chat_id": chatId, "caption": self.telegramPostText}
                 response = requests.post(url, files=files, data=data)
                 if response.status_code != 200:
                     raise Exception(f"{response.status_code} {response.reason}")
                 # being nice to the Telegram's api
-                time.sleep(.05)
+                time.sleep(0.05)
         except Exception as e:
-            print(e)
+            LOGGER.error(e)
             result = -1
 
         return result

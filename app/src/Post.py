@@ -1,7 +1,9 @@
 from Photo import Photo
+
+
 class Post:
     """
-        Base class for Tweetpost and Telegrampost
+    Base class for Tweetpost and Telegrampost
     """
 
     def __init__(self, photo: Photo):
@@ -18,7 +20,9 @@ class Post:
             exifSectionElements.append(f"shot on {self.photo.exifData.get('Model')}")
 
         if self.photo.exifData.get("DateTimeOriginal"):
-            exifSectionElements.append(f"in {self.photo.exifData.get('DateTimeOriginal')[:4]}")
+            exifSectionElements.append(
+                f"in {self.photo.exifData.get('DateTimeOriginal')[:4]}"
+            )
 
         exifSection = f"{', '.join(exifSectionElements)}."
         return exifSection
