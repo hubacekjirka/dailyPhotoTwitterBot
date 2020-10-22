@@ -5,7 +5,6 @@ from config import (
     access_token_secret,
     consumer_key,
     consumer_secret,
-    debug,
 )
 import tweepy
 from tweepy import TweepError
@@ -47,7 +46,7 @@ class TweetPost(Post):
 
     def getLocationDetails(self):
         # Using Twitter's API to reverse decode photo's coordinates
-        # to location: https://developer.twitter.com/en/docs/geo/places-near-location/api-reference/get-geo-reverse_geocode.html
+        # to location: https://developer.twitter.com/en/docs/geo/places-near-location/api-reference/get-geo-reverse_geocode.html # noqa: E501
         try:
             gpsInfo = self.photo.exifData.get("GPSInfo")
             if gpsInfo is None:
@@ -80,7 +79,9 @@ class TweetPost(Post):
         except TweepError as e:
             LOGGER.error("Couldn't resolve location " + str(e.response.content))
         except Exception as e:
-            LOGGER.error(f"Couldn't resolve location based on exif's coordinates, error: {e}")
+            LOGGER.error(
+                f"Couldn't resolve location based on exif's coordinates, error: {e}"
+            )
 
         return None
 

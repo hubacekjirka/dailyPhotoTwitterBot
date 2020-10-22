@@ -1,4 +1,5 @@
 from PIL import Image
+from PIL.ExifTags import TAGS
 import os
 import PIL.Image
 from classify_image import classifyImage
@@ -14,6 +15,7 @@ class Photo:
     """
 
     def __init__(self, photoPath):
+        LOGGER.debug(f"Picked file: {photoPath}")
         self.photoPath = photoPath
         self.fileName = os.path.basename(photoPath)
         self.resize()
@@ -27,13 +29,15 @@ class Photo:
             LOGGER.debug("No exif data found")
             return {}
 
-        LOGGER.debug(f"Available exif tags: {img._getexif().items()}")
+        LOGGER.debug(f"Raw exif tags: {img._getexif().items()}")
 
         exif = {
-            PIL.ExifTags.TAGS[k]: v
+            TAGS[k]: v
             for k, v in img._getexif().items()
             if k in PIL.ExifTags.TAGS
         }
+        LOGGER.debug(f"Exif tags: {exif}")
+
         return exif
 
     def getExifHashtags(self):
