@@ -78,6 +78,10 @@ class PhotoPicker:
             os.path.join(self.pickedPhoto.photoPath),
             os.path.join(self.usedPhotoFolder, self.pickedPhoto.fileName),
         )
+        LOGGER.debug(
+            f"Copying photo from {self.pickedPhoto.photoPath} "
+            f"to {self.usedPhotoFolder}"
+        )
 
     def copyPhotoToArchiveS3(self):
         if photoSource == "S3":
@@ -90,6 +94,11 @@ class PhotoPicker:
                 copy_source, awsBucket, "usedPhoto" + "/" + self.pickedPhoto.fileName
             )
 
+            LOGGER.debug(
+                f"Copying photo from {copy_source} "
+                f"usedPhoto/{self.pickedPhoto.fileName}"
+            )
+
     def removePhotoFromBacklogS3(self):
         if photoSource == "S3":
             s3 = self.getS3ClientHandle()
@@ -97,3 +106,4 @@ class PhotoPicker:
                 Bucket=awsBucket,
                 Key="backlog" + "/" + self.pickedPhoto.fileName,
             )
+        LOGGER.debug(f"File removed from backlog/{self.pickedPhoto.fileName}")
