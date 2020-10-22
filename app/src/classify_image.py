@@ -41,6 +41,10 @@ import re
 import sys
 import tarfile
 
+# Silent TF's Future Warnings
+import warnings
+warnings.simplefilter(action='ignore', category=FutureWarning)
+
 import numpy as np
 from six.moves import urllib
 import tensorflow as tf
@@ -251,4 +255,5 @@ if __name__ == '__main__':
   )
 
   FLAGS, unparsed = parser.parse_known_args()
+  tf.get_logger().setLevel('INFO')
   tf.app.run(main=main, argv=[sys.argv[0]] + unparsed)
