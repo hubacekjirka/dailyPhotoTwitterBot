@@ -60,11 +60,12 @@ class Photo:
         ):
 
             img = Image.open(self.photoPath)
+            LOGGER.debug(f"Resizing to {img.size[0] * 0.75} x {round(img.size[1] * 0.75)}")
             resizedImg = img.resize(
                 (round(img.size[0] * 0.75), round(img.size[1] * 0.75)),
                 resample=PIL.Image.LANCZOS,
             )
-            resizedImg.save(self.photoPath)
+            resizedImg.save(self.photoPath, exif=img.info["exif"])
 
     def getContentPrediction(self):
         def composeTensorflowHashtags(imageClassification):
