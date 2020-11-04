@@ -20,12 +20,41 @@
 
 ```sh
 git clone https://github.com/hubacekjirka/dailyPhotoTwitterBot.git
-docker build ./dailyPhotoTwitterBot/app --tag hubacekjirka/photooftheday
+docker build --target=prod ./app --tag hubacekjirka/photooftheday
+```
+For container debugging use:
+```sh
+docker build --target=debug ./app --tag hubacekjirka/photooftheday
 ```
 
 ## Usage
-Map Docker host photo folder to the guest
 
+### Debugging
+```sh
+docker run -p 5678:5678 hubacekjirka/photooftheday
+```
+In VS, setup path mapping in launch.json:
+```json
+"configurations": [
+        {
+            "name": "Python: Remote Attach",
+            "type": "python",
+            "request": "attach",
+            "connect": {
+                "host": "localhost",
+                "port": 5678
+            },
+            "pathMappings": [
+                {
+                    "localRoot": "${workspaceFolder}/app/src",
+                    "remoteRoot": "."
+                }
+            ]
+        },
+```
+
+### Without S3
+Map Docker host photo folder to the guest (when not using S3)
 ```sh
 docker run --volume /PathToThePhotoFolder/photos:/app/src/photos \
 -it hubacekjirka/photooftheday
