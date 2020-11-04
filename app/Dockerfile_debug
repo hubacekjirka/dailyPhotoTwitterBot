@@ -19,6 +19,7 @@ COPY . /app
 WORKDIR /app/src
 RUN python3 classify_image.py
 
-### Production stage
-FROM code as prod
-CMD ["python3", "bot.py"]
+### Debugging stage
+FROM code as debug
+RUN pip3 install debugpy
+ENTRYPOINT [ "python3", "-m", "debugpy", "--listen", "0.0.0.0:5678", "--wait-for-client", "bot.py" ]
