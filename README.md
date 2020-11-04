@@ -20,11 +20,11 @@
 
 ```sh
 git clone https://github.com/hubacekjirka/dailyPhotoTwitterBot.git
-docker build --target=prod ./app --tag hubacekjirka/photooftheday
+docker build ./app --tag hubacekjirka/photooftheday
 ```
-For container debugging use:
+For container debugging use Dockerfile_debug configuring debugpy and letting the script wait for debugger attachement:
 ```sh
-docker build --target=debug ./app --tag hubacekjirka/photooftheday
+docker build ./app --file ./app/Dockerfile_debug --tag hubacekjirka/photooftheday
 ```
 
 ## Usage
@@ -33,7 +33,7 @@ docker build --target=debug ./app --tag hubacekjirka/photooftheday
 ```sh
 docker run -p 5678:5678 hubacekjirka/photooftheday
 ```
-In VS, setup path mapping in launch.json:
+In VS, setup path mapping in launch.json (local and remoteRoot need to fit on each other, otherwise breakpoints get disabled):
 ```json
 "configurations": [
         {
