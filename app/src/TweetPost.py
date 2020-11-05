@@ -73,7 +73,7 @@ class TweetPost(Post):
 
             # picking only the first item as it seems to be the most
             # relevant one
-            return self.api.reverse_geocode(lat=lat, lon=lon, granularity="admin")[0]
+            return self.api.reverse_geocode(lat=lat, lon=lon, granularity="city")[0]
         except KeyError as e:
             LOGGER.error("Geo data not present " + e)
         except TweepError as e:
