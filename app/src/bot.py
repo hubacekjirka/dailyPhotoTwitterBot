@@ -58,7 +58,11 @@ if __name__ == "__main__":
         telegramMessage = TelegramPost(pickedPhoto, chatIdFilePath)
         if tweet is not None:
             if tweet.place is not None:
-                telegramMessage.setLocation(tweet.place.full_name)
+                if tweet.place.place_type == "admin":
+                    # if no city granularity is available, the api returns admin as the best match
+                    telegramMessage.setLocation(f"{tweet.place.full_name}")
+                else:
+                    telegramMessage.setLocation(f"{tweet.place.full_name}, {tweet.place.country}")
         # post it on telegram
         if telegramingEnabled:
             telegramPostResult = telegramMessage.postTelegramPost()
