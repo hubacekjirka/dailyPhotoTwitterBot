@@ -71,11 +71,26 @@ class TweetPost(Post):
             LOGGER.debug(f"LAT: {lat}")
             LOGGER.debug(f"LON: {lon}")
 
-            # picking only the first item as it seems to be the most
-            # relevant one
-            return self.api.reverse_geocode(lat=lat, lon=lon, granularity="city")[0]
+            locations = None
+            # Keep asking twitter
+            try:
+                locations = self.api.reverse_geocode(
+                    lat=lat, lon=lon, granularity="country"
+                )
+                locations = self.api.reverse_geocode(
+                    lat=lat, lon=lon, granularity="admin"
+                )
+                locations = self.api.reverse_geocode(
+                    lat=lat, lon=lon, granularity="city"
+                )
+
+            except KeyError:
+                pass
+
+            if locations is not None:
+                return locations[0]
         except KeyError as e:
-            LOGGER.error("Geo data not present " + e)
+            LOGGER.error("Geo data not present or not available " + e)
         except TweepError as e:
             LOGGER.error("Couldn't resolve location " + str(e.response.content))
         except Exception as e:

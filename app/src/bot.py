@@ -2,7 +2,7 @@ import os
 import sys
 import logging
 
-from config import tweetingEnabled, telegramingEnabled, chatIdFolder
+from config import tweetingEnabled, telegramingEnabled, chatIdFolder, photoSource
 from TweetPost import TweetPost
 
 from TelegramPost import TelegramPost
@@ -86,8 +86,10 @@ if __name__ == "__main__":
             # archive folders
             photoPicker.copyPhotoToArchive()
 
-            photoPicker.copyPhotoToArchiveS3()
-            photoPicker.removePhotoFromBacklogS3()
+            # ... and if we're using S3, move it there too
+            if photoSource == "S3":
+                photoPicker.copyPhotoToArchiveS3()
+                photoPicker.removePhotoFromBacklogS3()
     except Exception as e:
         LOGGER.error(e)
         sys.exit()
