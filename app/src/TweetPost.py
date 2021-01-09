@@ -24,7 +24,7 @@ class TweetPost(Post):
         self.tweetPostText = (
             f"{self.introText} "
             f"{self.exifSection} {self.closureText} "
-            f"{photo.exifHashtags} {photo.tensorFlowHashtags}"
+            f"{photo.tensorFlowHashtags}"
         )
 
     def getApi(self):

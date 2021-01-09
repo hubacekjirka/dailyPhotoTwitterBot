@@ -30,7 +30,7 @@ class TelegramPost(Post):
         return (
             f"{self.introText} "
             f"{self.exifSection} {self.closureText} "
-            f"{self.photo.exifHashtags} {self.photo.tensorFlowHashtags} "
+            f"{self.photo.tensorFlowHashtags} "
             f"{locationSection}"
             f"| Sent with ❤️"
         )
