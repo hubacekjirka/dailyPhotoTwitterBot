@@ -1,8 +1,8 @@
 ### Base stage
-FROM ubuntu:18.04 as base
+FROM ubuntu:20.04 as base
 
 RUN apt-get update
-RUN apt-get install -y python3.7-dev python3-pip gcc 
+RUN apt-get install -y python3.8-dev python3-pip gcc 
 
 CMD mkdir -p /app/src
 
@@ -15,10 +15,7 @@ FROM base as code
 WORKDIR /app
 COPY . /app
 
-# Download Tensorflow model
-WORKDIR /app/src
-RUN python3 classify_image.py
-
 ### Production stage
+WORKDIR /app/src
 FROM code as prod
 CMD ["python3", "bot.py"]

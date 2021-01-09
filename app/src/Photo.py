@@ -88,7 +88,7 @@ class Photo:
             response = client.detect_labels(
                 Image={"Bytes": photo_bytes}, MinConfidence=90
             )
-            tags = [f"#{t['Name'].lower()}" for t in response["Labels"]]
+            tags = [f"#{t['Name'].replace(' ', '')}" for t in response["Labels"]]
             LOGGER.debug(f"Rekognition detected the following labels: {tags}")
 
             return output + f"{' '.join(tags)}"
