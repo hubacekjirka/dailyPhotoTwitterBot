@@ -2,8 +2,11 @@ from PIL import Image
 from PIL.ExifTags import TAGS
 import os
 import PIL.Image
-from classify_image import classifyImage
+
+# from classify_image import classifyImage
 import logging
+import boto3
+from config import awsAccessKey, awsKeyId
 
 LOGGER = logging.getLogger(__name__)
 LOGGER.setLevel("DEBUG")
@@ -20,8 +23,8 @@ class Photo:
         self.fileName = os.path.basename(photoPath)
         self.resize()
         self.exifData = self.getExif()
-        self.exifHashtags = self.getExifHashtags()
-        self.tensorFlowHashtags = self.getContentPrediction()
+        # self.exifHashtags = self.getExifHashtags()
+        self.tensorFlowHashtags = self.get_content_hash_tag_prediction()
 
     def getExif(self):
         img = PIL.Image.open(self.photoPath)
@@ -31,11 +34,7 @@ class Photo:
 
         LOGGER.debug(f"Raw exif tags: {img._getexif().items()}")
 
-        exif = {
-            TAGS[k]: v
-            for k, v in img._getexif().items()
-            if k in PIL.ExifTags.TAGS
-        }
+        exif = {TAGS[k]: v for k, v in img._getexif().items() if k in PIL.ExifTags.TAGS}
         LOGGER.debug(f"Exif tags: {exif}")
 
         return exif
@@ -60,40 +59,39 @@ class Photo:
         ):
 
             img = Image.open(self.photoPath)
-            LOGGER.debug(f"Resizing to {img.size[0] * 0.75} x {round(img.size[1] * 0.75)}")
+            LOGGER.debug(
+                f"Resizing to {img.size[0] * 0.75} x {round(img.size[1] * 0.75)}"
+            )
             resizedImg = img.resize(
                 (round(img.size[0] * 0.75), round(img.size[1] * 0.75)),
                 resample=PIL.Image.LANCZOS,
             )
             resizedImg.save(self.photoPath, exif=img.info["exif"])
 
-    def getContentPrediction(self):
-        def composeTensorflowHashtags(imageClassification):
-            output = []
-            output.append("#tensorflow")
-            output.append("Content prediction:")
-            for node in imageClassification:
-                output.append(f"{format(node[0] * 100, '.0f')}%")
-                for predictedItems in node[1]:
-                    for predictedItem in predictedItems.split(","):
-                        # get rid of spaces
-                        hashtag = f"#{predictedItem.replace(' ','')}"
-                        output.append(hashtag)
+    def get_content_hash_tag_prediction(self):
+        """
+        Call AWS Rekognition service to retrieve image content prediction
+        """
+        output = "AWS #rekognition sees: "
 
-            output = f"{' '.join(output)}"
-            return output
-
-        # call Tensorflow to identify objects in the picture
-        tensorFlowHashtags = ""
         try:
-            imageClassification = classifyImage(
-                self.photoPath,
-                os.path.join(os.path.dirname(os.path.realpath(__file__)), "imagenet"),
-                5,
+            client = boto3.client(
+                "rekognition",
+                aws_access_key_id=awsAccessKey,
+                aws_secret_access_key=awsKeyId,
+                region_name="us-east-1",
             )
-            tensorFlowHashtags = composeTensorflowHashtags(imageClassification)
-        except Exception as e:
-            print("An error occured during tensorflow processing")
-            print(e)
 
-        return tensorFlowHashtags
+            with open(self.photoPath, "rb") as photo:
+                photo_bytes = photo.read()
+
+            response = client.detect_labels(
+                Image={"Bytes": photo_bytes}, MinConfidence=90
+            )
+            tags = [f"#{t['Name'].replace(' ', '')}" for t in response["Labels"]]
+            LOGGER.debug(f"Rekognition detected the following labels: {tags}")
+
+            return output + f"{' '.join(tags)}"
+
+        except Exception as e:
+            LOGGER.error(f"Something went wrong during running Rekognition: {e}")

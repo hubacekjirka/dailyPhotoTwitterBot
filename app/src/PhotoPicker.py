@@ -26,10 +26,15 @@ class PhotoPicker:
         self.s3ClientHandle = None
 
     def getPhoto(self):
+        """
+        Retrieve a photo from S3 if it's enabled in the config to the local folder
+        Pick a random photo from the local forlder (if S3 is enabled there's
+        exacly one photo)
+        """
         if photoSource == "S3":
             self.getPhotoFromS3()
 
-        # pick a photo at random and create a photo object
+        # Pick a random photo from the local folder
         photos = [
             f
             for f in os.listdir(self.photoFolder)

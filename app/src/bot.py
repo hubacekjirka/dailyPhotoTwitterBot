@@ -59,10 +59,13 @@ if __name__ == "__main__":
         if tweet is not None:
             if tweet.place is not None:
                 if tweet.place.place_type == "admin":
-                    # if no city granularity is available, the api returns admin as the best match
+                    # if no city granularity is available, the api returns
+                    # admin granularity as the best match
                     telegramMessage.setLocation(f"{tweet.place.full_name}")
                 else:
-                    telegramMessage.setLocation(f"{tweet.place.full_name}, {tweet.place.country}")
+                    telegramMessage.setLocation(
+                        f"{tweet.place.full_name}, {tweet.place.country}"
+                    )
         # post it on telegram
         if telegramingEnabled:
             telegramPostResult = telegramMessage.postTelegramPost()
@@ -70,7 +73,7 @@ if __name__ == "__main__":
         LOGGER.info(f"Error occured during telegramming. Error: {e}")
         sys.exit()
 
-    # move file, if posting is succesful and enabled on all platforms
+    # Move file, if posting is succesful and enabled on all platforms
     # TODO: refactor this in the "future" to instance variables
     try:
         if (

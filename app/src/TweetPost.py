@@ -24,7 +24,7 @@ class TweetPost(Post):
         self.tweetPostText = (
             f"{self.introText} "
             f"{self.exifSection} {self.closureText} "
-            f"{photo.exifHashtags} {photo.tensorFlowHashtags}"
+            f"{photo.tensorFlowHashtags}"
         )
 
     def getApi(self):
@@ -52,12 +52,12 @@ class TweetPost(Post):
             if gpsInfo is None:
                 return None
 
-            latD = float(gpsInfo[2][0][0]) / float(gpsInfo[2][0][1])
-            latM = float(gpsInfo[2][1][0]) / float(gpsInfo[2][1][1])
-            latS = float(gpsInfo[2][2][0]) / float(gpsInfo[2][2][1])
-            lonD = float(gpsInfo[4][0][0]) / float(gpsInfo[4][0][1])
-            lonM = float(gpsInfo[4][1][0]) / float(gpsInfo[4][1][1])
-            lonS = float(gpsInfo[4][2][0]) / float(gpsInfo[4][2][1])
+            latD = float(gpsInfo[2][0])
+            latM = float(gpsInfo[2][1])
+            latS = float(gpsInfo[2][2])
+            lonD = float(gpsInfo[4][0])
+            lonM = float(gpsInfo[4][1])
+            lonS = float(gpsInfo[4][2])
 
             lat = latD + latM / 60 + latS / 3600
             lon = lonD + lonM / 60 + lonS / 3600
