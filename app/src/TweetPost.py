@@ -1,5 +1,5 @@
 from Post import Post
-from Photo import Photo
+from PhotoWithBenefits import PhotoWithBenefits
 from config import (
     access_token,
     access_token_secret,
@@ -15,26 +15,26 @@ LOGGER.setLevel("DEBUG")
 
 
 class TweetPost(Post):
-    def __init__(self, photo: Photo):
+    def __init__(self, photo: PhotoWithBenefits):
         super().__init__(photo)
-        self.api = self.getApi()
-        self.apiCredentialsValid = self.verifyApiCredentials(self.api)
-        self.place = self.getLocationDetails()
-        self.closureText = "TwitterBot (GitHub: http://bit.ly/PotDGithub)"
-        self.tweetPostText = (
-            f"{self.introText} "
-            f"{self.exifSection} {self.closureText} "
-            f"{photo.tensorFlowHashtags}"
+        self._api = self._get_api()
+        self._api_credentials_valid = self._verify_api_credentials(self._api)
+        self._geo = self._get_geo()
+        self._bot_signature = "TwitterBot (GitHub: http://bit.ly/PotDGithub)"
+        self._tweet_post_text = (
+            f"{self._intro_text} "
+            f"{self._exif_section} {self._bot_signature} "
+            f"{photo._content_prediction_hashtags}"
         )
 
-    def getApi(self):
+    def _get_api(self):
         # Authenticate using application keys
         auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
         auth.set_access_token(access_token, access_token_secret)
         api = tweepy.API(auth)
         return api
 
-    def verifyApiCredentials(self, api):
+    def _verify_api_credentials(self, api):
         try:
             api.verify_credentials()
             LOGGER.debug("Twitter authentication OK")
@@ -44,23 +44,23 @@ class TweetPost(Post):
             LOGGER.error(f"Error during authentication, error: {e}")
             return False
 
-    def getLocationDetails(self):
+    def _get_geo(self):
         # Using Twitter's API to reverse decode photo's coordinates
         # to location: https://developer.twitter.com/en/docs/geo/places-near-location/api-reference/get-geo-reverse_geocode.html # noqa: E501
         try:
-            gpsInfo = self.photo.exifData.get("GPSInfo")
+            gpsInfo = self._photo._exif.get("GPSInfo")
             if gpsInfo is None:
                 return None
 
-            latD = float(gpsInfo[2][0])
-            latM = float(gpsInfo[2][1])
-            latS = float(gpsInfo[2][2])
-            lonD = float(gpsInfo[4][0])
-            lonM = float(gpsInfo[4][1])
-            lonS = float(gpsInfo[4][2])
+            lat_d = float(gpsInfo[2][0])
+            lat_m = float(gpsInfo[2][1])
+            lat_s = float(gpsInfo[2][2])
+            lon_d = float(gpsInfo[4][0])
+            lon_m = float(gpsInfo[4][1])
+            lon_s = float(gpsInfo[4][2])
 
-            lat = latD + latM / 60 + latS / 3600
-            lon = lonD + lonM / 60 + lonS / 3600
+            lat = lat_d + lat_m / 60 + lat_s / 3600
+            lon = lon_d + lon_m / 60 + lon_s / 3600
 
             # flat earth fix
             if gpsInfo[1] == "S":
@@ -74,13 +74,13 @@ class TweetPost(Post):
             locations = None
             # Keep asking twitter
             try:
-                locations = self.api.reverse_geocode(
+                locations = self._api.reverse_geocode(
                     lat=lat, lon=lon, granularity="country"
                 )
-                locations = self.api.reverse_geocode(
+                locations = self._api.reverse_geocode(
                     lat=lat, lon=lon, granularity="admin"
                 )
-                locations = self.api.reverse_geocode(
+                locations = self._api.reverse_geocode(
                     lat=lat, lon=lon, granularity="city"
                 )
 
@@ -100,26 +100,26 @@ class TweetPost(Post):
 
         return None
 
-    def postTweetPost(self):
-        if len(self.tweetPostText) > 275:
-            self.tweetPostText = f"{self.tweetPostText[:275]}..."
+    def post_tweet(self):
+        if len(self._tweet_post_text) > 275:
+            self._tweet_post_text = f"{self._tweet_post_text[:275]}..."
 
         kwargs = {}
         # not today
         kwargs["possibly_sensitive"] = False
 
-        if self.place is not None:
-            kwargs["place_id"] = self.place.id
+        if self._geo is not None:
+            kwargs["place_id"] = self._geo.id
 
-        if self.tweetPostText is not None:
-            kwargs["status"] = self.tweetPostText
+        if self._tweet_post_text is not None:
+            kwargs["status"] = self._tweet_post_text
 
-        postResult = -1
-        postStatus = None
+        post_result = -1
+        post_status = None
         try:
-            postStatus = self.api.update_with_media(self.photo.photoPath, **kwargs)
-            postResult = 0
+            post_status = self._api.update_with_media(self._photo._file_path, **kwargs)
+            post_result = 0
         except Exception as e:
             LOGGER.error(e)
 
-        return postResult, postStatus
+        return post_result, post_status
