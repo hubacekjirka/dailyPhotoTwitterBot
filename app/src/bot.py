@@ -2,7 +2,7 @@ import os
 import sys
 import logging
 
-from config import tweeting_enabled, telegraming_enabled, chatIdFolder, photo_source
+from config import tweeting_enabled, telegraming_enabled, chat_id_folder, photo_source
 from TweetPost import TweetPost
 
 from TelegramPost import TelegramPost
@@ -54,7 +54,7 @@ if __name__ == "__main__":
     # Telegraming
     try:
         telegram_post_result = 0
-        chat_id_file_path = os.path.join(chatIdFolder, "chatIds.json")
+        chat_id_file_path = os.path.join(chat_id_folder, "chatIds.json")
         telegram_message = TelegramPost(photo, chat_id_file_path)
         if tweet is not None:
             # TODO: Remove this dependenci on the fact tweeting needs to be
