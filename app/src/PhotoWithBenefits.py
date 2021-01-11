@@ -6,28 +6,27 @@ import PIL.Image
 # from classify_image import classifyImage
 import logging
 import boto3
-from config import awsAccessKey, awsKeyId
+from config import aws_access_key, aws_key_id
 
 LOGGER = logging.getLogger(__name__)
 LOGGER.setLevel("DEBUG")
 
 
-class Photo:
+class PhotoWithBenefits:
     """
     Photo class
     """
 
     def __init__(self, photoPath):
         LOGGER.debug(f"Picked file: {photoPath}")
-        self.photoPath = photoPath
-        self.fileName = os.path.basename(photoPath)
-        self.resize()
-        self.exifData = self.getExif()
-        # self.exifHashtags = self.getExifHashtags()
-        self.tensorFlowHashtags = self.get_content_hash_tag_prediction()
+        self._file_path = photoPath
+        self._file_name = os.path.basename(photoPath)
+        self._resize()
+        self._exif = self._get_exif()
+        self._content_prediction_hashtags = self._get_content_hashtags()
 
-    def getExif(self):
-        img = PIL.Image.open(self.photoPath)
+    def _get_exif(self):
+        img = PIL.Image.open(self._file_path)
         if img._getexif() is None:
             LOGGER.debug("No exif data found")
             return {}
@@ -39,26 +38,26 @@ class Photo:
 
         return exif
 
-    def getExifHashtags(self):
+    def _get_exif_hashtags(self):
         hashtags = []
         hashtags.append("")
 
-        if self.exifData.get("Model"):
-            hashtags.append(f"#{self.exifData.get('Model').replace(' ','')}")
+        if self._exif.get("Model"):
+            hashtags.append(f"#{self._exif.get('Model').replace(' ','')}")
 
-        exifHashtags = f"{' '.join(hashtags)}"
-        return exifHashtags
+        exif_hashtags = f"{' '.join(hashtags)}"
+        return exif_hashtags
 
-    def resize(self):
+    def _resize(self):
         # keep resizing until the file is smaller than 3MB and 8192px
         #     => Twitter's API limit
         while (
-            os.path.getsize(self.photoPath) >= 3 * 1024 * 1024
-            or Image.open(self.photoPath).size[0] > 8192
-            or Image.open(self.photoPath).size[1] > 8192
+            os.path.getsize(self._file_path) >= 3 * 1024 * 1024
+            or Image.open(self._file_path).size[0] > 8192
+            or Image.open(self._file_path).size[1] > 8192
         ):
 
-            img = Image.open(self.photoPath)
+            img = Image.open(self._file_path)
             LOGGER.debug(
                 f"Resizing to {img.size[0] * 0.75} x {round(img.size[1] * 0.75)}"
             )
@@ -66,9 +65,9 @@ class Photo:
                 (round(img.size[0] * 0.75), round(img.size[1] * 0.75)),
                 resample=PIL.Image.LANCZOS,
             )
-            resizedImg.save(self.photoPath, exif=img.info["exif"])
+            resizedImg.save(self._file_path, exif=img.info["exif"])
 
-    def get_content_hash_tag_prediction(self):
+    def _get_content_hashtags(self):
         """
         Call AWS Rekognition service to retrieve image content prediction
         """
@@ -77,18 +76,19 @@ class Photo:
         try:
             client = boto3.client(
                 "rekognition",
-                aws_access_key_id=awsAccessKey,
-                aws_secret_access_key=awsKeyId,
+                aws_access_key_id=aws_access_key,
+                aws_secret_access_key=aws_key_id,
                 region_name="us-east-1",
             )
 
-            with open(self.photoPath, "rb") as photo:
+            with open(self._file_path, "rb") as photo:
                 photo_bytes = photo.read()
 
-            response = client.detect_labels(
-                Image={"Bytes": photo_bytes}, MinConfidence=90
-            )
-            tags = [f"#{t['Name'].replace(' ', '')}" for t in response["Labels"]]
+            response = client.detect_labels(Image={"Bytes": photo_bytes})
+            tags = [
+                f"{round(t['Confidence'],0):.0f}% #{t['Name'].replace(' ', '')}"
+                for t in response["Labels"]
+            ]
             LOGGER.debug(f"Rekognition detected the following labels: {tags}")
 
             return output + f"{' '.join(tags)}"

@@ -2,7 +2,7 @@ import os
 import sys
 import logging
 
-from config import tweetingEnabled, telegramingEnabled, chatIdFolder, photoSource
+from config import tweeting_enabled, telegraming_enabled, chatIdFolder, photo_source
 from TweetPost import TweetPost
 
 from TelegramPost import TelegramPost
@@ -19,80 +19,82 @@ if __name__ == "__main__":
     )
     LOGGER.info("Bot started")
 
-    # Picks a photo from the backlog's photo folder and stores it
-    # as a Photo object.
-    #     Optionally: gets photo from S3
+    """
+    The following try-except blogs uses PhotoPicker to retrieve a photo
+    (Optinally from S3) and using the photo instantiates a Photo Object
+    """
     try:
         CURRENTDIR = os.path.dirname(os.path.realpath(__file__))
-        # initialize a PhotoPicker object, sets paths
-        photoPicker = PhotoPicker(CURRENTDIR)
+        photo_picker = PhotoPicker(CURRENTDIR)
 
         # Retrieves a photo file and creates a photo object
-        pickedPhoto = photoPicker.getPhoto()
+        photo = photo_picker.get_photo()
 
     except Exception as e:
         LOGGER.error(f"Couldn't retrieve the photo file. Error: {e}")
         sys.exit()
 
-    LOGGER.debug(f"Filename: {pickedPhoto.fileName}")
+    LOGGER.debug(f"Filename: {photo._file_name}")
 
     # Tweeting
     try:
-        tweetPostResult = 0
-        tweet = TweetPost(pickedPhoto)
-        LOGGER.debug(tweet.tweetPostText)
+        tweet_posting_result = 0
+        tweet = TweetPost(photo)
+        LOGGER.debug(f"Tweet post text: {tweet._tweet_post_text}")
 
-        if tweetingEnabled:
-            tweetPostResult, tweetPostStatus = tweet.postTweetPost()
-            LOGGER.debug(tweetPostResult)
-            LOGGER.debug(str(tweetPostStatus).encode("utf-8"))
+        if tweeting_enabled:
+            tweet_posting_result, tweet_post_status = tweet.post_tweet()
+            LOGGER.debug(tweet_posting_result)
+            LOGGER.debug(str(tweet_post_status).encode("utf-8"))
 
     except Exception as e:
-        LOGGER.info(f"Error occured during tweeting. Error: {e}")
+        LOGGER.error(f"Error occured during tweeting. Error: {e}")
         sys.exit()
 
     # Telegraming
     try:
-        telegramPostResult = 0
-        chatIdFilePath = os.path.join(chatIdFolder, "chatIds.json")
-        telegramMessage = TelegramPost(pickedPhoto, chatIdFilePath)
+        telegram_post_result = 0
+        chat_id_file_path = os.path.join(chatIdFolder, "chatIds.json")
+        telegram_message = TelegramPost(photo, chat_id_file_path)
         if tweet is not None:
-            if tweet.place is not None:
-                if tweet.place.place_type == "admin":
+            # TODO: Remove this dependenci on the fact tweeting needs to be
+            # configured AND enabled
+            if tweet._geo is not None:
+                if tweet._geo.place_type == "admin":
                     # if no city granularity is available, the api returns
                     # admin granularity as the best match
-                    telegramMessage.setLocation(f"{tweet.place.full_name}")
+                    telegram_message._set_location(f"{tweet._geo.full_name}")
                 else:
-                    telegramMessage.setLocation(
-                        f"{tweet.place.full_name}, {tweet.place.country}"
+                    telegram_message._set_location(
+                        f"{tweet._geo.full_name}"
                     )
         # post it on telegram
-        if telegramingEnabled:
-            telegramPostResult = telegramMessage.postTelegramPost()
+        #if telegraming_enabled:
+        #    telegram_post_result = telegram_message.post_telegram_post()
     except Exception as e:
-        LOGGER.info(f"Error occured during telegramming. Error: {e}")
+        LOGGER.error(f"Error occured during telegramming. Error: {e}")
         sys.exit()
 
     # Move file, if posting is succesful and enabled on all platforms
     # TODO: refactor this in the "future" to instance variables
     try:
         if (
-            tweetPostResult == 0
-            and telegramPostResult == 0
-            and tweetingEnabled
-            and telegramingEnabled
+            tweet_posting_result == 0
+            and telegram_post_result == 0
+            and tweeting_enabled
+            and telegraming_enabled
         ):
 
-            LOGGER.debug(f"Moving {pickedPhoto.fileName} to the used photo folder.")
+            LOGGER.debug(f"Moving {photo._file_name} to the used photo folder.")
 
             # if everything goes well, move the photo file to the the
             # archive folders
-            photoPicker.copyPhotoToArchive()
+            photo_picker.copy_file_to_archive()
 
             # ... and if we're using S3, move it there too
-            if photoSource == "S3":
-                photoPicker.copyPhotoToArchiveS3()
-                photoPicker.removePhotoFromBacklogS3()
+            if photo_source == "S3":
+                photo_picker.copy_file_to_archive_in_s3()
+                photo_picker.remove_file_from_backlog_in_s3()
     except Exception as e:
         LOGGER.error(e)
         sys.exit()

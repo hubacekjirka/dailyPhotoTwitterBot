@@ -1,5 +1,5 @@
-from config import awsAccessKey, awsKeyId, awsBucket, photoSource
-from Photo import Photo
+from config import aws_access_key, aws_key_id, aws_bucket, photo_source
+from PhotoWithBenefits import PhotoWithBenefits
 import os
 import boto3
 import random
@@ -20,83 +20,81 @@ class PhotoPicker:
             Path to the root folder of the application containing
             necessary photo folders.
         """
-        self.photoFolder = os.path.join(currentDir, "photos", "backlog")
-        self.usedPhotoFolder = os.path.join(currentDir, "photos", "usedPhoto")
-        self.pickedPhoto = None
-        self.s3ClientHandle = None
+        self._file_folder = os.path.join(currentDir, "photos", "backlog")
+        self._used_file_folder = os.path.join(currentDir, "photos", "usedPhoto")
+        self._photo = None
+        self._s3_client_handle = None
 
-    def getPhoto(self):
+    def get_photo(self):
         """
         Retrieve a photo from S3 if it's enabled in the config to the local folder
         Pick a random photo from the local forlder (if S3 is enabled there's
         exacly one photo)
         """
-        if photoSource == "S3":
-            self.getPhotoFromS3()
+        if photo_source == "S3":
+            self._retrieve_random_file_from_s3()
 
         # Pick a random photo from the local folder
-        photos = [
+        files = [
             f
-            for f in os.listdir(self.photoFolder)
+            for f in os.listdir(self._file_folder)
             if f.endswith("jpg") or f.endswith("jpeg")
         ]
-        photo = photos[random.randint(0, len(photos) - 1)]
+        photo = files[random.randint(0, len(files) - 1)]
 
         # TODO: raise exception when there're no photos in the folder
+        self._photo = PhotoWithBenefits(os.path.join(self._file_folder, photo))
+        return self._photo
 
-        self.pickedPhoto = Photo(os.path.join(self.photoFolder, photo))
-
-        return self.pickedPhoto
-
-    def createS3ClientHandle(self):
+    def _create_s3_client_handle(self):
         return boto3.client(
-            "s3", aws_access_key_id=awsAccessKey, aws_secret_access_key=awsKeyId
+            "s3", aws_access_key_id=aws_access_key, aws_secret_access_key=aws_key_id
         )
 
     # TODO: Fix this, always creates new handle
-    def getS3ClientHandle(self):
-        if self.s3ClientHandle is None:
-            return self.createS3ClientHandle()
+    def _get_s3_client_handle(self):
+        if self._s3_client_handle is None:
+            return self._create_s3_client_handle()
         else:
-            return self.s3ClientHandle
+            return self._s3_client_handle
 
-    def getPhotoFromS3(self):
-        s3 = self.getS3ClientHandle()
+    def _retrieve_random_file_from_s3(self):
+        s3 = self._get_s3_client_handle()
 
-        allObjects = s3.list_objects_v2(Bucket=awsBucket, Prefix="backlog")
+        s3_objects = s3.list_objects_v2(Bucket=aws_bucket, Prefix="backlog")
         # Size: 0 ~ folder object
-        filesOnly = list(filter(lambda x: x["Size"] != 0, allObjects["Contents"]))
+        s3_files = list(filter(lambda x: x["Size"] != 0, s3_objects["Contents"]))
 
-        pickedFile = random.choice(filesOnly)
-        pickedFileName = pickedFile["Key"].split("/")[-1]
-        pickedFileKey = pickedFile["Key"]
+        random_file = random.choice(s3_files)
+        random_file_name = random_file["Key"].split("/")[-1]
+        random_file_key = random_file["Key"]
 
-        filePath = os.path.join(self.photoFolder, pickedFileName)
-        LOGGER.debug(f"Picked {filePath}")
-        s3.download_file(awsBucket, pickedFileKey, filePath)
+        file_path = os.path.join(self._file_folder, random_file_name)
+        s3.download_file(aws_bucket, random_file_key, file_path)
+        LOGGER.debug(f"Picked a random file from S3: {file_path}")
 
-    def copyPhotoToArchive(self):
+    def copy_file_to_archive(self):
         """
         Move photo file to the archive folder
         """
         os.rename(
-            os.path.join(self.pickedPhoto.photoPath),
-            os.path.join(self.usedPhotoFolder, self.pickedPhoto.fileName),
+            os.path.join(self._photo._file_path),
+            os.path.join(self._used_file_folder, self._photo._file_name),
         )
         LOGGER.debug(
-            f"Copying photo from {self.pickedPhoto.photoPath} "
-            f"to {self.usedPhotoFolder}"
+            f"Copying photo from {self._photo._file_path} "
+            f"to {self._used_file_folder}"
         )
 
-    def copyPhotoToArchiveS3(self):
-        if photoSource == "S3":
-            s3 = self.getS3ClientHandle()
+    def copy_file_to_archive_in_s3(self):
+        if photo_source == "S3":
+            s3 = self._get_s3_client_handle()
             copy_source = {
-                "Bucket": awsBucket,
-                "Key": "backlog" + "/" + self.pickedPhoto.fileName,
+                "Bucket": aws_bucket,
+                "Key": "backlog" + "/" + self._photo._file_name,
             }
             s3.copy(
-                copy_source, awsBucket, "usedPhoto" + "/" + self.pickedPhoto.fileName
+                copy_source, aws_bucket, "usedPhoto" + "/" + self._photo._file_name
             )
 
             LOGGER.debug(
@@ -104,11 +102,11 @@ class PhotoPicker:
                 f"usedPhoto/{self.pickedPhoto.fileName}"
             )
 
-    def removePhotoFromBacklogS3(self):
-        if photoSource == "S3":
-            s3 = self.getS3ClientHandle()
+    def remove_file_from_backlog_in_s3(self):
+        if photo_source == "S3":
+            s3 = self._get_s3_client_handle()
             s3.delete_object(
-                Bucket=awsBucket,
-                Key="backlog" + "/" + self.pickedPhoto.fileName,
+                Bucket=aws_bucket,
+                Key="backlog" + "/" + self._photo._file_name,
             )
-        LOGGER.debug(f"File removed from backlog/{self.pickedPhoto.fileName}")
+            LOGGER.debug(f"File removed from backlog/{self.pickedPhoto.fileName}")
