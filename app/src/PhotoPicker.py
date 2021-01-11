@@ -99,7 +99,7 @@ class PhotoPicker:
 
             LOGGER.debug(
                 f"Copying photo from {copy_source} "
-                f"usedPhoto/{self.pickedPhoto.fileName}"
+                f"usedPhoto/{self._photo._file_name}"
             )
 
     def remove_file_from_backlog_in_s3(self):
@@ -109,4 +109,4 @@ class PhotoPicker:
                 Bucket=aws_bucket,
                 Key="backlog" + "/" + self._photo._file_name,
             )
-            LOGGER.debug(f"File removed from backlog/{self.pickedPhoto.fileName}")
+            LOGGER.debug(f"File removed from backlog/{self._photo._file_name}")
