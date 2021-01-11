@@ -69,8 +69,8 @@ if __name__ == "__main__":
                         f"{tweet._geo.full_name}"
                     )
         # post it on telegram
-        #if telegraming_enabled:
-        #    telegram_post_result = telegram_message.post_telegram_post()
+        if telegraming_enabled:
+            telegram_post_result = telegram_message.post_telegram_post()
     except Exception as e:
         LOGGER.error(f"Error occured during telegramming. Error: {e}")
         sys.exit()
