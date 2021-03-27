@@ -16,7 +16,14 @@ class TelegramPost(Post):
     def __init__(self, photo: PhotoWithBenefits, chat_id_file_path):
         super().__init__(photo)
         self._chat_id_file_path = chat_id_file_path
-        self._chat_ids = self._update_and_get_recipient_list(self._chat_id_file_path)
+
+        try:
+            self._chat_ids = self._update_and_get_recipient_list(
+                self._chat_id_file_path
+            )
+        except Exception as e:
+            LOGGER.warning(f"Couldn't update recipient list. Error: {e}")
+
         self._signature = "TelegramBot (GitHub: http://bit.ly/PotDGithub)"
         self._location_name = None
         self._telegram_post_text = self._compose_telegram_post_text()
