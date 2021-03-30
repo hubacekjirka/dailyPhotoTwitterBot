@@ -22,3 +22,6 @@ aws_bucket = 'AWSBUCKETNAME'
 tweeting_enabled = True
 telegraming_enabled = True
 debug = True
+
+# Sentry
+sentry_api_key = ""

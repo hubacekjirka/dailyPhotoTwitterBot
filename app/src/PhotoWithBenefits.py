@@ -18,7 +18,7 @@ class PhotoWithBenefits:
     """
 
     def __init__(self, photoPath):
-        LOGGER.debug(f"Picked file: {photoPath}")
+        LOGGER.info(f"Picked file: {photoPath}")
         self._file_path = photoPath
         self._file_name = os.path.basename(photoPath)
         self._resize()
@@ -51,10 +51,13 @@ class PhotoWithBenefits:
     def _resize(self):
         # keep resizing until the file is smaller than 3MB and 8192px
         #     => Twitter's API limit
+        #       also x+y must be less than 10000 for Telegram
         while (
             os.path.getsize(self._file_path) >= 3 * 1024 * 1024
             or Image.open(self._file_path).size[0] > 8192
             or Image.open(self._file_path).size[1] > 8192
+            or Image.open(self._file_path).size[0] + Image.open(self._file_path).size[1]
+            > 10000
         ):
 
             img = Image.open(self._file_path)
