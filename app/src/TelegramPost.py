@@ -11,6 +11,10 @@ import logging
 LOGGER = logging.getLogger(__name__)
 LOGGER.setLevel("DEBUG")
 
+# Keep trying for two mintues
+POST_RETRY_COUNT = 24  # retry posting 10 times
+POST_RETRY_TIMEOUT = 5  # wait 10 seconds
+
 
 class TelegramPost(Post):
     def __init__(self, photo: PhotoWithBenefits, chat_id_file_path):
@@ -78,36 +82,53 @@ class TelegramPost(Post):
         self._location_name = location_name
 
     def post_telegram_post(self):
-        # refresh telegram's message
+        if self._chat_ids is None:
+            raise Exception("No chat_ids as the message recipients set.")
+
+        # refresh telegram's message ~ adds location text
         self._telegram_post_text = self._compose_telegram_post_text()
         result = 0
-        try:
-            """
-            https://core.telegram.org/bots/faq#how-can-i-message-all-of-my-bot-39s-subscribers-at-once
-            How can I message all of my bot's subscribers at once?
-            Unfortunately, at this moment we don't have methods for
-            sending bulk messages, e.g. notifications. We may add
-            something along these lines in the future.
-            #
-            In order to avoid hitting our limits when sending out mass
-            notifications, consider spreading them over longer intervals,
-            e.g. 8-12 hours. The API will not allow more than ~30 messages
-            to different users per second, if you go over that, you'll
-            start getting 429 errors.
-            """
 
-            # push the message to every chatId
-            for chatId in self._chat_ids:
-                url = f"https://api.telegram.org/bot{telegram_token}/sendPhoto"
-                files = {"photo": open(self._photo._file_path, "rb")}
-                data = {"chat_id": chatId, "caption": self._telegram_post_text}
-                response = requests.post(url, files=files, data=data)
-                if response.status_code != 200:
-                    raise Exception(f"{response.status_code} {response.reason}")
-                # being nice to the Telegram's api
-                time.sleep(0.05)
-        except Exception as e:
-            LOGGER.error(e)
-            result = -1
+        """
+        https://core.telegram.org/bots/faq#how-can-i-message-all-of-my-bot-39s-subscribers-at-once
+        How can I message all of my bot's subscribers at once?
+        Unfortunately, at this moment we don't have methods for
+        sending bulk messages, e.g. notifications. We may add
+        something along these lines in the future.
+        #
+        In order to avoid hitting our limits when sending out mass
+        notifications, consider spreading them over longer intervals,
+        e.g. 8-12 hours. The API will not allow more than ~30 messages
+        to different users per second, if you go over that, you'll
+        start getting 429 errors.
+        """
+
+        # push the message to every chat_id
+        for chat_id in self._chat_ids:
+            # reset counter for new chat_id
+            retry_attempt = 1
+            while retry_attempt <= POST_RETRY_COUNT:
+                try:
+                    url = f"https://api.telegram.org/bot{telegram_token}/sendPhoto"
+                    files = {"photo": open(self._photo._file_path, "rb")}
+                    data = {"chat_id": chat_id, "caption": self._telegram_post_text}
+                    response = requests.post(url, files=files, data=data)
+                    if response.status_code != 200:
+                        raise Exception(
+                            f"{response.status_code}; {response.reason};"
+                            + f"{response.text}"
+                        )
+                    # being nice to the Telegram's api and wait 0.05 sec
+                    time.sleep(0.05)
+                    break
+                except Exception as e:
+                    LOGGER.error(e)
+                    if retry_attempt == POST_RETRY_COUNT:
+                        raise Exception(
+                            f"Failed {retry_attempt} times to send "
+                            + "Telegram message. Giving up ..."
+                        )
+                    time.sleep(POST_RETRY_TIMEOUT)
+                    retry_attempt += 1
 
         return result

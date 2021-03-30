@@ -1,8 +1,18 @@
 import os
 import sys
 import logging
+import sentry_sdk
 
-from config import tweeting_enabled, telegraming_enabled, chat_id_folder, photo_source
+from config import (
+    tweeting_enabled,
+    telegraming_enabled,
+    chat_id_folder,
+    photo_source,
+    sentry_api_key,
+)
+from sentry_sdk import set_level
+from sentry_sdk.integrations.logging import LoggingIntegration  # noqa: F401
+
 from TweetPost import TweetPost
 
 from TelegramPost import TelegramPost
@@ -17,6 +27,15 @@ if __name__ == "__main__":
         format="%(asctime)s %(levelname)s %(funcName)s: %(message)s",
         datefmt="%Y-%m-%d %H:%M:%S",
     )
+
+    if sentry_api_key is not None or not sentry_api_key == "":
+        sentry_sdk.init(
+            sentry_api_key,
+            traces_sample_rate=1.0)
+        set_level("info")
+    else:
+        LOGGER.warning("Sentry logging not started")
+
     LOGGER.info("Bot started")
 
     """
@@ -31,10 +50,8 @@ if __name__ == "__main__":
         photo = photo_picker.get_photo()
 
     except Exception as e:
-        LOGGER.error(f"Couldn't retrieve the photo file. Error: {e}")
+        LOGGER.exception(f"Couldn't retrieve the photo file. Error: {e}")
         sys.exit()
-
-    LOGGER.debug(f"Filename: {photo._file_name}")
 
     # Tweeting
     try:
@@ -48,7 +65,7 @@ if __name__ == "__main__":
             LOGGER.debug(str(tweet_post_status).encode("utf-8"))
 
     except Exception as e:
-        LOGGER.error(f"Error occured during tweeting. Error: {e}")
+        LOGGER.exception(f"Error occured during tweeting. Error: {e}")
         sys.exit()
 
     # Telegraming
@@ -65,14 +82,12 @@ if __name__ == "__main__":
                     # admin granularity as the best match
                     telegram_message._set_location(f"{tweet._geo.full_name}")
                 else:
-                    telegram_message._set_location(
-                        f"{tweet._geo.full_name}"
-                    )
+                    telegram_message._set_location(f"{tweet._geo.full_name}")
         # post it on telegram
         if telegraming_enabled:
             telegram_post_result = telegram_message.post_telegram_post()
     except Exception as e:
-        LOGGER.error(f"Error occured during telegramming. Error: {e}")
+        LOGGER.exception(f"Error occured during telegramming. Error: {e}")
         sys.exit()
 
     # Move file, if posting is succesful and enabled on all platforms
@@ -96,7 +111,7 @@ if __name__ == "__main__":
                 photo_picker.copy_file_to_archive_in_s3()
                 photo_picker.remove_file_from_backlog_in_s3()
     except Exception as e:
-        LOGGER.error(e)
+        LOGGER.exception(e)
         sys.exit()
 
     LOGGER.info("So, O-Ren...any more subordinates for me to kill?")

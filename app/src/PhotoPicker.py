@@ -71,7 +71,7 @@ class PhotoPicker:
 
         file_path = os.path.join(self._file_folder, random_file_name)
         s3.download_file(aws_bucket, random_file_key, file_path)
-        LOGGER.debug(f"Picked a random file from S3: {file_path}")
+        LOGGER.info(f"Picked a random file from S3: {file_path}")
 
     def copy_file_to_archive(self):
         """
