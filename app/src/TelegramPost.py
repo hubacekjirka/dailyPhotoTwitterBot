@@ -20,11 +20,16 @@ class TelegramPost(Post):
     def __init__(self, photo: PhotoWithBenefits, chat_id_file_path):
         super().__init__(photo)
         self._chat_id_file_path = chat_id_file_path
+        self._chat_ids = None
 
         try:
-            self._chat_ids = self._update_and_get_recipient_list(
-                self._chat_id_file_path
-            )
+            # Dynamic adding of chats disabled, no use of it now
+            # self._chat_ids = self._update_and_get_recipient_list(
+            #     self._chat_id_file_path
+            # )
+
+            self._chat_ids = self._get_local_recipient_list(self._chat_id_file_path)
+
         except Exception as e:
             LOGGER.warning(f"Couldn't update recipient list. Error: {e}")
 
@@ -77,6 +82,18 @@ class TelegramPost(Post):
             json_data.write(json.dumps({"chatIds": list(chat_ids)}))
 
         return chat_ids
+
+    # Retrieve locally specified chat_ids
+    def _get_local_recipient_list(self, chat_id_file_path):
+        try:
+            chat_ids = set()
+            with open(chat_id_file_path) as json_data:
+                json_content = json.load(json_data)
+                # Put chatIds into the existing chatIds set
+                list(map(lambda x: chat_ids.add(x), json_content["chatIds"]))
+                return chat_ids
+        except Exception as e:
+            LOGGER.error(f"Error gathering chat_ids, {e}")
 
     def _set_location(self, location_name):
         self._location_name = location_name
