@@ -122,6 +122,7 @@ class TelegramPost(Post):
 
         # push the message to every chat_id
         for chat_id in self._chat_ids:
+            LOGGER.info(f"Sending Telegram to {chat_id}")
             # reset counter for new chat_id
             retry_attempt = 1
             while retry_attempt <= POST_RETRY_COUNT:
@@ -130,9 +131,19 @@ class TelegramPost(Post):
                     files = {"photo": open(self._photo._file_path, "rb")}
                     data = {"chat_id": chat_id, "caption": self._telegram_post_text}
                     response = requests.post(url, files=files, data=data)
-                    if response.status_code != 200:
+
+                    if response.status_code == 200:
+                        LOGGER.info(f"Sent telegram to {chat_id}")
+                    elif response.status_code == 403:
+                        LOGGER.warning(
+                            f"Couldn't send message to chat_id {chat_id}"
+                            + f"because of: {response.status_code}; {response.reason}"
+                            + f"{response.text}"
+                        )
+                    else:
                         raise Exception(
-                            f"{response.status_code}; {response.reason};"
+                            f"Something's wrong with chat_id {chat_id}: "
+                            f" {response.status_code}; {response.reason}; "
                             + f"{response.text}"
                         )
                     # being nice to the Telegram's api and wait 0.05 sec
@@ -142,8 +153,8 @@ class TelegramPost(Post):
                     LOGGER.error(e)
                     if retry_attempt == POST_RETRY_COUNT:
                         raise Exception(
-                            f"Failed {retry_attempt} times to send "
-                            + "Telegram message. Giving up ..."
+                            f"Failed {retry_attempt} times to send"
+                            + f"Telegram message to {chat_id}. Giving up ..."
                         )
                     time.sleep(POST_RETRY_TIMEOUT)
                     retry_attempt += 1
