@@ -10,6 +10,9 @@ class Post:
     def __init__(self, photo: PhotoWithBenefits):
         self._photo = photo
         self._intro_text = "#photoOfTheDay"
+        if photo._throwback_thursday:
+            self._intro_text = f"{self._intro_text} #ThrowbackThursday"
+
         self._exif_section = self._get_exif_section()
 
     def _get_exif_section(self):

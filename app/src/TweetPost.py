@@ -20,7 +20,7 @@ class TweetPost(Post):
         self._api = self._get_api()
         self._api_credentials_valid = self._verify_api_credentials(self._api)
         self._geo = self._get_geo()
-        self._bot_signature = "TwitterBot (GitHub: http://bit.ly/PotDGithub)"
+        self._bot_signature = "TwitterBot (Github: http://bit.ly/PotDGithub)"
         self._tweet_post_text = (
             f"{self._intro_text} "
             f"{self._exif_section} {self._bot_signature} "

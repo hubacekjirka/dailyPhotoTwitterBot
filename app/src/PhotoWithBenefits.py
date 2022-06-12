@@ -17,13 +17,14 @@ class PhotoWithBenefits:
     Photo class
     """
 
-    def __init__(self, photoPath):
-        LOGGER.info(f"Picked file: {photoPath}")
-        self._file_path = photoPath
-        self._file_name = os.path.basename(photoPath)
+    def __init__(self, photo_path, **kwargs):
+        LOGGER.info(f"Picked file: {photo_path}")
+        self._file_path = photo_path
+        self._file_name = os.path.basename(photo_path)
         self._resize()
         self._exif = self._get_exif()
         self._content_prediction_hashtags = self._get_content_hashtags()
+        self._throwback_thursday = kwargs.get("throwback_thursday", False)
 
     def _get_exif(self):
         img = PIL.Image.open(self._file_path)
