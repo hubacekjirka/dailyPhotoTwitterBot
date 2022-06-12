@@ -33,7 +33,7 @@ class TelegramPost(Post):
         except Exception as e:
             LOGGER.warning(f"Couldn't update recipient list. Error: {e}")
 
-        self._signature = "TelegramBot (GitHub: http://bit.ly/PotDGithub)"
+        self._signature = "TelegramBot (Github: http://bit.ly/PotDGithub)"
         self._location_name = None
         self._telegram_post_text = self._compose_telegram_post_text()
 

@@ -25,3 +25,6 @@ debug = True
 
 # Sentry
 sentry_api_key = ""
+
+# Enable Throwback Thursday
+throwback_thursday = True

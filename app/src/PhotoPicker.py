@@ -1,5 +1,12 @@
-from config import aws_access_key, aws_key_id, aws_bucket, photo_source
+from config import (
+    aws_access_key,
+    aws_key_id,
+    aws_bucket,
+    photo_source,
+    throwback_thursday,
+)
 from PhotoWithBenefits import PhotoWithBenefits
+from datetime import datetime
 import os
 import boto3
 import random
@@ -20,6 +27,7 @@ class PhotoPicker:
             Path to the root folder of the application containing
             necessary photo folders.
         """
+        self.throwback_thursday = throwback_thursday and datetime.now().weekday() == 3
         self._file_folder = os.path.join(currentDir, "photos", "backlog")
         self._used_file_folder = os.path.join(currentDir, "photos", "usedPhoto")
         self._photo = None
@@ -43,7 +51,10 @@ class PhotoPicker:
         photo = files[random.randint(0, len(files) - 1)]
 
         # TODO: raise exception when there're no photos in the folder
-        self._photo = PhotoWithBenefits(os.path.join(self._file_folder, photo))
+        self._photo = PhotoWithBenefits(
+            photo_path=os.path.join(self._file_folder, photo),
+            throwback_thursday=self.throwback_thursday,
+        )
         return self._photo
 
     def _create_s3_client_handle(self):
@@ -61,7 +72,11 @@ class PhotoPicker:
     def _retrieve_random_file_from_s3(self):
         s3 = self._get_s3_client_handle()
 
-        s3_objects = s3.list_objects_v2(Bucket=aws_bucket, Prefix="backlog")
+        s3_objects = (
+            s3.list_objects_v2(Bucket=aws_bucket, Prefix="usedPhoto")
+            if self.throwback_thursday
+            else s3.list_objects_v2(Bucket=aws_bucket, Prefix="backlog")
+        )
         # Size: 0 ~ folder object
         s3_files = list(filter(lambda x: x["Size"] != 0, s3_objects["Contents"]))
 
@@ -93,9 +108,7 @@ class PhotoPicker:
                 "Bucket": aws_bucket,
                 "Key": "backlog" + "/" + self._photo._file_name,
             }
-            s3.copy(
-                copy_source, aws_bucket, "usedPhoto" + "/" + self._photo._file_name
-            )
+            s3.copy(copy_source, aws_bucket, "usedPhoto" + "/" + self._photo._file_name)
 
             LOGGER.debug(
                 f"Copying photo from {copy_source} "
