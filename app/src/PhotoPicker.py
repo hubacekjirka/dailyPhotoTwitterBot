@@ -7,6 +7,7 @@ from config import (
 )
 from PhotoWithBenefits import PhotoWithBenefits
 from datetime import datetime
+from botocore.exceptions import ClientError
 import os
 import boto3
 import random
@@ -108,18 +109,37 @@ class PhotoPicker:
                 "Bucket": aws_bucket,
                 "Key": "backlog" + "/" + self._photo._file_name,
             }
-            s3.copy(copy_source, aws_bucket, "usedPhoto" + "/" + self._photo._file_name)
-
             LOGGER.debug(
                 f"Copying photo from {copy_source} "
                 f"usedPhoto/{self._photo._file_name}"
             )
 
+            for _ in range(3):
+                try:
+                    s3.copy(
+                        copy_source,
+                        aws_bucket,
+                        "usedPhoto" + "/" + self._photo._file_name,
+                    )
+                    break
+                except ClientError:
+                    LOGGER.warning(f"S3 copy operation failed. Retrying ...")
+            else:
+                raise Exception("Failed to perform S3 copy operation. Giving up ...")
+
     def remove_file_from_backlog_in_s3(self):
         if photo_source == "S3":
             s3 = self._get_s3_client_handle()
-            s3.delete_object(
-                Bucket=aws_bucket,
-                Key="backlog" + "/" + self._photo._file_name,
-            )
-            LOGGER.debug(f"File removed from backlog/{self._photo._file_name}")
+            LOGGER.debug(f"Deleting file from backlog/{self._photo._file_name}")
+
+            for _ in range(3):
+                try:
+                    s3.delete_object(
+                        Bucket=aws_bucket,
+                        Key="backlog" + "/" + self._photo._file_name,
+                    )
+                    break
+                except ClientError:
+                        LOGGER.warning(f"S3 delete operation failed. Retrying ...")
+            else:
+                raise Exception("Failed to perform S3 delete opration. Giving up ...")
