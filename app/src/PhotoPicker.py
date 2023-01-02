@@ -125,7 +125,7 @@ class PhotoPicker:
                 except ClientError:
                     LOGGER.warning(f"S3 copy operation failed. Retrying ...")
             else:
-                raise Exception("Failed to perform S3 copy. Giving up ...")
+                raise Exception("Failed to perform S3 copy operation. Giving up ...")
 
     def remove_file_from_backlog_in_s3(self):
         if photo_source == "S3":
@@ -142,4 +142,4 @@ class PhotoPicker:
                 except ClientError:
                         LOGGER.warning(f"S3 delete operation failed. Retrying ...")
             else:
-                raise Exception("Failed to perform S3 copy. Giving up ...")
+                raise Exception("Failed to perform S3 delete opration. Giving up ...")
