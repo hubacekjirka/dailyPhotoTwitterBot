@@ -12,6 +12,7 @@ import os
 import boto3
 import random
 import logging
+import time
 
 LOGGER = logging.getLogger(__name__)
 
@@ -109,21 +110,24 @@ class PhotoPicker:
                 "Bucket": aws_bucket,
                 "Key": "backlog" + "/" + self._photo._file_name,
             }
-            LOGGER.debug(
-                f"Copying photo from {copy_source} "
-                f"usedPhoto/{self._photo._file_name}"
-            )
+            copy_target = f"usedPhoto/{self._photo._file_name}"
+
+            LOGGER.debug(f"Copying photo from {copy_source} to {copy_target}")
 
             for _ in range(3):
                 try:
                     s3.copy(
                         copy_source,
                         aws_bucket,
-                        "usedPhoto" + "/" + self._photo._file_name,
+                        copy_target,
                     )
                     break
-                except ClientError:
-                    LOGGER.warning(f"S3 copy operation failed. Retrying ...")
+                except ClientError as e:
+                    LOGGER.warning(
+                        f"S3 copy operation from {copy_source} to {copy_target} failed. Retrying ...",
+                        exc_info=e,
+                    )
+                    time.sleep(3)
             else:
                 raise Exception("Failed to perform S3 copy operation. Giving up ...")
 
@@ -140,6 +144,6 @@ class PhotoPicker:
                     )
                     break
                 except ClientError:
-                        LOGGER.warning(f"S3 delete operation failed. Retrying ...")
+                    LOGGER.warning(f"S3 delete operation failed. Retrying ...")
             else:
                 raise Exception("Failed to perform S3 delete opration. Giving up ...")
