@@ -107,7 +107,7 @@ if __name__ == "__main__":
             photo_picker.copy_file_to_archive()
 
             # ... and if we're using S3, move it there too
-            if photo_source == "S3":
+            if photo_source == "S3" and not photo._throwback_thursday:
                 photo_picker.copy_file_to_archive_in_s3()
                 photo_picker.remove_file_from_backlog_in_s3()
     except Exception as e:
