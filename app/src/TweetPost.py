@@ -7,7 +7,7 @@ from config import (
     consumer_secret,
 )
 import tweepy
-from tweepy import TweepError
+# from tweepy import TweepError
 import logging
 
 LOGGER = logging.getLogger(__name__)
@@ -18,8 +18,10 @@ class TweetPost(Post):
     def __init__(self, photo: PhotoWithBenefits):
         super().__init__(photo)
         self._api = self._get_api()
-        self._api_credentials_valid = self._verify_api_credentials(self._api)
-        self._geo = self._get_geo()
+        self._v2_api = self._get_v2_api()
+        # self._api_credentials_valid = self._verify_api_credentials(self._api)
+        # self._geo = self._get_geo()
+        self._geo = None
         self._bot_signature = "TwitterBot (Github: http://bit.ly/PotDGithub)"
         self._tweet_post_text = (
             f"{self._intro_text} "
@@ -27,11 +29,22 @@ class TweetPost(Post):
             f"{photo._content_prediction_hashtags}"
         )
 
-    def _get_api(self):
+    def _get_api(self)-> tweepy.Client:
         # Authenticate using application keys
         auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
         auth.set_access_token(access_token, access_token_secret)
         api = tweepy.API(auth)
+
+        return api
+
+    def _get_v2_api(self)-> tweepy.Client:
+        api = tweepy.Client(
+            consumer_key=consumer_key,
+            consumer_secret=consumer_secret,
+            access_token=access_token,
+            access_token_secret=access_token_secret,
+        )
+
         return api
 
     def _verify_api_credentials(self, api):
@@ -91,8 +104,8 @@ class TweetPost(Post):
                 return locations[0]
         except KeyError as e:
             LOGGER.error("Geo data not present or not available " + e)
-        except TweepError as e:
-            LOGGER.error("Couldn't resolve location " + str(e.response.content))
+        # except TweepError as e:
+            # LOGGER.error("Couldn't resolve location " + str(e.response.content))
         except Exception as e:
             LOGGER.error(
                 f"Couldn't resolve location based on exif's coordinates, error: {e}"
@@ -117,7 +130,8 @@ class TweetPost(Post):
         post_result = -1
         post_status = None
         try:
-            post_status = self._api.update_with_media(self._photo._file_path, **kwargs)
+            # post_status = self._api.update_with_media(self._photo._file_path, **kwargs)
+            post_result = self._v2_api.create_tweet(text='hello world')
             post_result = 0
         except Exception as e:
             LOGGER.error(e)

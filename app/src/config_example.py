@@ -28,3 +28,6 @@ sentry_api_key = ""
 
 # Enable Throwback Thursday
 throwback_thursday = True
+
+# Enable Throwback Everyday, takes precedence over throwback_thursday
+throwback_everyday = True
