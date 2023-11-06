@@ -4,6 +4,7 @@ from config import (
     aws_bucket,
     photo_source,
     throwback_thursday,
+    throwback_everyday,
 )
 from PhotoWithBenefits import PhotoWithBenefits
 from datetime import datetime
@@ -30,6 +31,7 @@ class PhotoPicker:
             necessary photo folders.
         """
         self.throwback_thursday = throwback_thursday and datetime.now().weekday() == 3
+        self.throwback_everyday = throwback_everyday
         self._file_folder = os.path.join(currentDir, "photos", "backlog")
         self._used_file_folder = os.path.join(currentDir, "photos", "usedPhoto")
         self._photo = None
@@ -56,6 +58,7 @@ class PhotoPicker:
         self._photo = PhotoWithBenefits(
             photo_path=os.path.join(self._file_folder, photo),
             throwback_thursday=self.throwback_thursday,
+            throwback_everyday=self.throwback_everyday,
         )
         return self._photo
 
@@ -76,7 +79,7 @@ class PhotoPicker:
 
         s3_objects = (
             s3.list_objects_v2(Bucket=aws_bucket, Prefix="usedPhoto")
-            if self.throwback_thursday
+            if self.throwback_thursday or self.throwback_everyday
             else s3.list_objects_v2(Bucket=aws_bucket, Prefix="backlog")
         )
         # Size: 0 ~ folder object

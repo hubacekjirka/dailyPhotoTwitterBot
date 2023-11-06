@@ -25,6 +25,7 @@ class PhotoWithBenefits:
         self._exif = self._get_exif()
         self._content_prediction_hashtags = self._get_content_hashtags()
         self._throwback_thursday = kwargs.get("throwback_thursday", False)
+        self._throwback_everyday = kwargs.get("throwback_everyday", False)
 
     def _get_exif(self):
         img = PIL.Image.open(self._file_path)
