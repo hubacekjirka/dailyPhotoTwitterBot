@@ -1,4 +1,5 @@
-config.py
+app/src/legacy/config.py
+config.yaml
 .vscode
 *.jpg
 *.jpeg

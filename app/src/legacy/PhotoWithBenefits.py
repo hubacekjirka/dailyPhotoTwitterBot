@@ -55,7 +55,7 @@ class PhotoWithBenefits:
         #     => Twitter's API limit
         #       also x+y must be less than 10000 for Telegram
         while (
-            os.path.getsize(self._file_path) >= 3 * 1024 * 1024
+            os.path.getsize(self._file_path) >= 1 * 1024 * 1024
             or Image.open(self._file_path).size[0] > 8192
             or Image.open(self._file_path).size[1] > 8192
             or Image.open(self._file_path).size[0] + Image.open(self._file_path).size[1]
@@ -72,7 +72,7 @@ class PhotoWithBenefits:
             )
             resizedImg.save(self._file_path, exif=img.info["exif"])
 
-    def _get_content_hashtags(self):
+    def _get_content_hashtags(self) -> list:
         """
         Call AWS Rekognition service to retrieve image content prediction
         """
@@ -96,7 +96,7 @@ class PhotoWithBenefits:
             ]
             LOGGER.debug(f"Rekognition detected the following labels: {tags}")
 
-            return output + f"{' '.join(tags)}"
+            return tags
 
         except Exception as e:
             LOGGER.error(f"Something went wrong during running Rekognition: {e}")

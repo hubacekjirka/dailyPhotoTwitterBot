@@ -1,0 +1,15 @@
+[tool.black]
+line-length = 120
+target-version = ["py312"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+select = ["E", "F", "B", "I"]  # Common rule sets: pyflakes, pycodestyle, bugbear, isort
+ignore = ["E203", ]     # Compatibility with Black
+fix = true
+
+[tool.mypy]
+python_version = 3.13
+strict = true
+ignore_missing_imports = true

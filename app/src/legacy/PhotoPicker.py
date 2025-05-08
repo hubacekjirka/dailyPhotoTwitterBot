@@ -37,7 +37,7 @@ class PhotoPicker:
         self._photo = None
         self._s3_client_handle = None
 
-    def get_photo(self):
+    def get_photo(self) -> PhotoWithBenefits:
         """
         Retrieve a photo from S3 if it's enabled in the config to the local folder
         Pick a random photo from the local forlder (if S3 is enabled there's

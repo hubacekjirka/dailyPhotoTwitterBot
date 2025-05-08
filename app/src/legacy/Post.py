@@ -1,8 +1,9 @@
+from abc import ABC, abstractmethod
 from PhotoWithBenefits import PhotoWithBenefits
 from constants import friendly_camera_mapping
 
 
-class Post:
+class Post(ABC):
     """
     Base class for Tweetpost and Telegrampost
     """
@@ -41,3 +42,7 @@ class Post:
         Retrieve a nicer camera model name instead of a cryptic one
         """
         return friendly_camera_mapping.get(model, model)
+
+    @abstractmethod
+    def post(self):
+        pass

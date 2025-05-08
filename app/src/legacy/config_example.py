@@ -31,3 +31,7 @@ throwback_thursday = True
 
 # Enable Throwback Everyday, takes precedence over throwback_thursday
 throwback_everyday = True
+
+# Bsky config
+login = "handler"
+password = "password"

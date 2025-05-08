@@ -98,7 +98,7 @@ class TelegramPost(Post):
     def _set_location(self, location_name):
         self._location_name = location_name
 
-    def post_telegram_post(self):
+    def post(self):
         if self._chat_ids is None:
             raise Exception("No chat_ids as the message recipients set.")
 
