@@ -1,9 +1,11 @@
-import pyaml as yaml
+import os
 
-from Exceptions import ConfigLoadError
+import yaml
+
+from exceptions import ConfigLoadError
 
 try:
-    with open("config.yaml", "r") as f:
+    with open(os.path.join(os.path.dirname(__file__), "config.yaml"), "r") as f:
         CONFIG = yaml.safe_load(f)
 except Exception as ex:
     raise ConfigLoadError("Failed to load config") from ex

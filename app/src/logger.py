@@ -5,7 +5,7 @@ import sentry_sdk
 from config import CONFIG
 
 # Set up standard logging
-logger = logging.getLogger("ImageBot")
+logger = logging.getLogger("Bot")
 logger.setLevel(logging.INFO)
 
 # Console handler
@@ -15,8 +15,6 @@ console_handler.setLevel(logging.INFO)
 # Formatter
 formatter = logging.Formatter("[%(levelname)s] %(asctime)s - %(message)s")
 console_handler.setFormatter(formatter)
-
-logger.addHandler(console_handler)
 
 
 logging.basicConfig(
@@ -31,3 +29,5 @@ if sentry_provider.get("enabled"):
     logging.info("Sentry logging started")
 else:
     logging.warning("Sentry logging not started")
+
+logger.addHandler(console_handler)

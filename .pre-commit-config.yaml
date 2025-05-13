@@ -19,3 +19,4 @@ repos:
     hooks:
       - id: mypy
         exclude: ^app/src/legacy/
+        additional_dependencies: ['types-PyYAML']
