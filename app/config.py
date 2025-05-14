@@ -1,7 +1,7 @@
 import os
 
 import yaml
-from exceptions import ConfigLoadError
+from core.exceptions import ConfigLoadError
 
 try:
     with open(os.path.join(os.path.dirname(__file__), "config.yaml"), "r") as f:

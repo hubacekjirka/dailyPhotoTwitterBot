@@ -1,6 +1,6 @@
-# from app.bot import Bot
+# from app.core import bot
 
 
 # def test_tests(ut_config):
-#     bot = Bot(ut_config)
+
 #     assert True

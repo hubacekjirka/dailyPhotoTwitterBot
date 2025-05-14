@@ -1,11 +1,11 @@
-from bot import Bot
 from config import CONFIG
+from core.bot import Bot
 
 
 def main() -> None:
 
     bot = Bot(CONFIG)
-    print(bot)
+    bot.run()
 
 
 if __name__ == "__main__":
