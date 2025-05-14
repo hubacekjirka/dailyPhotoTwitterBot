@@ -1,7 +1,6 @@
 import os
 
 import yaml
-
 from exceptions import ConfigLoadError
 
 try:

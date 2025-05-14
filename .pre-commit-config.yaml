@@ -1,22 +1,20 @@
-# default_exclude: ^('app/src/legacy/')
-
 repos:
   - repo: https://github.com/psf/black
     rev: 24.3.0
     hooks:
       - id: black
-        exclude: ^app/src/legacy/
+        exclude: ^app/legacy/
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.3.0
     hooks:
       - id: ruff
         args: [--fix]
-        exclude: ^app/src/legacy/
+        exclude: ^app/legacy/
 
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: v1.10.0
     hooks:
       - id: mypy
-        exclude: ^app/src/legacy/
+        exclude: ^app/legacy/
         additional_dependencies: ['types-PyYAML']

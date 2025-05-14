@@ -4,9 +4,9 @@ from logger import logger
 
 
 class Bot:
-    def __init__(self, config: Dict):
+    def __init__(self, config: Dict[str, str]):
         logger.info("Bot started")
         self.config = config
 
-    def run(self):
+    def run(self) -> None:
         pass

@@ -1,7 +1,6 @@
 import logging
 
 import sentry_sdk
-
 from config import CONFIG
 
 # Set up standard logging

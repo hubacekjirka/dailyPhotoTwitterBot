@@ -2,10 +2,10 @@ from bot import Bot
 from config import CONFIG
 
 
-def main():
+def main() -> None:
 
     bot = Bot(CONFIG)
-    bot.process_images()
+    print(bot)
 
 
 if __name__ == "__main__":
