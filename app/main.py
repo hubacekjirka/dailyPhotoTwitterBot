@@ -1,10 +1,14 @@
-from config import CONFIG
-from core.bot import Bot
+from pathlib import Path
+
+from bot import Bot
+from config import load_config
+
+CONFIG_FILE_PATH = Path("app", "config.yaml")
 
 
 def main() -> None:
 
-    bot = Bot(CONFIG)
+    bot = Bot(load_config(CONFIG_FILE_PATH))
     bot.run()
 
 

@@ -1,7 +1,7 @@
 import logging
 
 import sentry_sdk
-from config import CONFIG
+from config import Config
 
 # Set up standard logging
 logger = logging.getLogger("Bot")
@@ -22,11 +22,16 @@ logging.basicConfig(
     datefmt="%Y-%m-%d %H:%M:%S",
 )
 
-sentry_provider = CONFIG["providers"].get("sentry")
-if sentry_provider.get("enabled"):
-    sentry_sdk.init(sentry_provider.get("api_key"), traces_sample_rate=1.0)
-    logging.info("Sentry logging started")
-else:
-    logging.warning("Sentry logging not started")
-
 logger.addHandler(console_handler)
+
+
+def setup_sentry(config: Config) -> None:
+    try:
+        sentry_sdk.init(
+            dsn=config.providers.sentry.dsn,
+            traces_sample_rate=1.0,
+            send_default_pii=True,
+        )
+        logger.info("Sentry initialized")
+    except Exception as e:
+        logger.error(f"Failed to initialize Sentry: {e}")
