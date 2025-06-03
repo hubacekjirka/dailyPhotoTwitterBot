@@ -1,0 +1,30 @@
+app_config:
+  throwback_thursday: true
+  camera_mapping:
+    GM1913: "Oneplus 7 Pro"
+    FC3170: "Mavic Air 2"
+    SP500: "Canon AE-1 Program"
+
+providers:
+  "sentry":
+    enabled: true
+    dsn: "UT"
+
+  "s3":
+    region: "UT"
+    bucket: "UT"
+    access_key_id: "UT"
+    secret_access_key: "UT"
+    backlog_folder: "backlog"
+
+  "bsky":
+    enabled: true
+    login: "UT"
+    bsky_password: "UT"
+
+  "telegram":
+    enabled: true
+    telegram_token: "UT"
+    chat_ids:
+      - 000000000
+

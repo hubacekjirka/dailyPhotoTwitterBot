@@ -1,7 +1,7 @@
 import logging
 
 import sentry_sdk
-from config import Config
+from config import SentryProvider
 
 # Set up standard logging
 logger = logging.getLogger("Bot")
@@ -25,10 +25,14 @@ logging.basicConfig(
 logger.addHandler(console_handler)
 
 
-def setup_sentry(config: Config) -> None:
+def setup_sentry(config: SentryProvider) -> None:
+    if not config.enabled:
+        logger.info("Sentry is disabled in the configuration")
+        return
+
     try:
         sentry_sdk.init(
-            dsn=config.providers.sentry.dsn,
+            dsn=config.dsn,
             traces_sample_rate=1.0,
             send_default_pii=True,
         )

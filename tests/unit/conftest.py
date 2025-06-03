@@ -1,10 +1,10 @@
-# from typing import Any
+from pathlib import Path
 
-# import pytest
+import pytest
+from config import Config, load_config
 
-# from app import config
 
-
-# @pytest.fixture
-# def ut_config() -> dict[str, Any]:
-#     return config.CONFIG
+@pytest.fixture  # type: ignore[misc]
+def ut_config() -> Config:
+    ut_config_path = Path(__file__).parent / "ut_config.yaml"
+    return load_config(ut_config_path)
