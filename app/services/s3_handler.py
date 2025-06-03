@@ -2,8 +2,7 @@ import random
 from typing import Tuple
 
 import boto3
-
-from app.config import S3Provider
+from config import S3Provider
 
 
 class S3_handler:
@@ -24,12 +23,10 @@ class S3_handler:
                 aws_secret_access_key=s3_config.secret_access_key,
                 region_name=s3_config.region,
             )
-        except KeyError as e:
-            raise KeyError(f"Missing AWS configuration key: {e}") from e
         except Exception as e:
             raise RuntimeError(f"Failed to initialize S3 client: {e}") from e
 
-    def get_random_file_as_binary(self, prefix: str) -> Tuple[bytes, str]:
+    def get_random_file(self, prefix: str) -> Tuple[bytes, str]:
         """
         Fetches a random file under a given S3 prefix and returns its binary content.
 

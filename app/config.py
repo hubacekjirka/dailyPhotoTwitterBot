@@ -24,7 +24,7 @@ class S3Provider(BaseModel):
     bucket: str
     access_key_id: str
     secret_access_key: str
-    backlog_folder: str
+    backlog_folder: Optional[str] = "backlog"
 
 
 class BskyProvider(BaseModel):
