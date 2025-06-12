@@ -1,0 +1,7 @@
+pyyaml
+boto3
+pydantic
+atproto
+Pillow
+requests
+sentry_sdk
