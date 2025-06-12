@@ -3,9 +3,10 @@ from typing import Tuple
 
 import boto3
 from config import S3Provider
+from logger import logger
 
 
-class S3_handler:
+class S3Handler:
 
     def __init__(self, s3_config: S3Provider) -> None:
         """
@@ -63,4 +64,5 @@ class S3_handler:
         chosen_key = random.choice(files)
 
         obj = self.s3_client.get_object(Bucket=self.bucket, Key=chosen_key)
+        logger.info(f"Retrieved file {chosen_key} from s3://{self.bucket}/{prefix}")
         return bytes(obj["Body"].read()), chosen_key

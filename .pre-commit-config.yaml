@@ -17,4 +17,4 @@ repos:
     hooks:
       - id: mypy
         exclude: ^app/legacy/
-        additional_dependencies: ['types-PyYAML', pydantic]
+        additional_dependencies: ['types-PyYAML', pydantic, types-requests]
