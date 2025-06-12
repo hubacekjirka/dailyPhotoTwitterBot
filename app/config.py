@@ -19,8 +19,8 @@ class SentryProvider(BaseModel):
     dsn: str
 
 
-class S3Provider(BaseModel):
-    region: str
+class AwsProvider(BaseModel):
+    region: Optional[str] = "eu-central-1"
     bucket: str
     access_key_id: str
     secret_access_key: str
@@ -44,7 +44,7 @@ class TelegramProvider(BaseModel):
 
 class Providers(BaseModel):
     sentry: SentryProvider
-    s3: S3Provider
+    aws: AwsProvider
     bsky: BskyProvider
     telegram: TelegramProvider
 

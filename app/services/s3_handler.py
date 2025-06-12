@@ -2,13 +2,13 @@ import random
 from typing import Tuple
 
 import boto3
-from config import S3Provider
+from config import AwsProvider
 from logger import logger
 
 
 class S3Handler:
 
-    def __init__(self, s3_config: S3Provider) -> None:
+    def __init__(self, aws_config: AwsProvider) -> None:
         """
         Initializes the S3 handler with the provided configuration.
         :param s3_config: S3Provider configuration object containing AWS credentials and bucket info.
@@ -17,30 +17,28 @@ class S3Handler:
             RuntimeError: If there is an issue initializing the S3 client.
         """
         try:
-            self.bucket = s3_config.bucket
+            self.config = aws_config
             self.s3_client = boto3.client(
                 "s3",
-                aws_access_key_id=s3_config.access_key_id,
-                aws_secret_access_key=s3_config.secret_access_key,
-                region_name=s3_config.region,
+                aws_access_key_id=aws_config.access_key_id,
+                aws_secret_access_key=aws_config.secret_access_key,
+                region_name=aws_config.region,
             )
         except Exception as e:
             raise RuntimeError(f"Failed to initialize S3 client: {e}") from e
 
-    def get_random_file(self, prefix: str) -> Tuple[bytes, str]:
+    def get_random_file(self) -> Tuple[bytes, str]:
         """
         Fetches a random file under a given S3 prefix and returns its binary content.
 
-        :param bucket_name: Name of the S3 bucket.
-        :param prefix: S3 key prefix (like a folder path).
         :return: Tuple containing the binary content of the file and its S3 key.
         :raises FileNotFoundError: If no files are found under the given prefix.
         :raises RuntimeError: If there is an issue with the S3 client.
         """
-        response = self.s3_client.list_objects_v2(Bucket=self.bucket, Prefix=prefix)
+        response = self.s3_client.list_objects_v2(Bucket=self.config.bucket, Prefix=self.config.backlog_folder)
 
         if "Contents" not in response or not response["Contents"]:
-            raise FileNotFoundError(f"No files found in s3://{self.bucket}/{prefix}")
+            raise FileNotFoundError(f"No files found in s3://{self.config.bucket}/{self.config.backlog_folder}")
 
         # Filter out directories (zero-byte keys that end in '/')
         files = [
@@ -59,10 +57,12 @@ class S3Handler:
         ]
 
         if not files:
-            raise FileNotFoundError(f"No files found under prefix {prefix} in bucket {self.bucket}")
+            raise FileNotFoundError(
+                f"No files found under prefix {self.config.backlog_folder} in bucket {self.config.bucket}"
+            )
 
         chosen_key = random.choice(files)
 
-        obj = self.s3_client.get_object(Bucket=self.bucket, Key=chosen_key)
-        logger.info(f"Retrieved file {chosen_key} from s3://{self.bucket}/{prefix}")
+        obj = self.s3_client.get_object(Bucket=self.config.bucket, Key=chosen_key)
+        logger.info(f"Retrieved file {chosen_key} from s3://{self.config.bucket}/{self.config.backlog_folder}")
         return bytes(obj["Body"].read()), chosen_key

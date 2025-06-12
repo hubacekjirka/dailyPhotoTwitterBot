@@ -1,3 +1,5 @@
+import time
+
 import requests
 from config import TelegramProvider
 from logger import logger
@@ -20,5 +22,7 @@ class TelegramHandler:
             response = requests.post(
                 url, data={"chat_id": chat_id, "caption": "It's coming home!"}, files={"photo": picture}
             )
+            time.sleep(0.5)  # backoff a bit
+
             if response.status_code != 200:
                 logger.error(f"Failed to send photo to chat_id {chat_id}: {response.text}")
