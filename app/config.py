@@ -11,7 +11,7 @@ class AppConfig(BaseModel):
     camera_mapping: Dict[str, str]
 
 
-# --- Provider Configs (Flat structure) ---
+# --- Provider Configs ---
 
 
 class SentryProvider(BaseModel):
@@ -25,6 +25,7 @@ class AwsProvider(BaseModel):
     access_key_id: str
     secret_access_key: str
     backlog_folder: Optional[str] = "backlog"
+    archive_folder: Optional[str] = "archive"
 
 
 class BskyProvider(BaseModel):

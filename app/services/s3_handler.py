@@ -66,3 +66,15 @@ class S3Handler:
         obj = self.s3_client.get_object(Bucket=self.config.bucket, Key=chosen_key)
         logger.info(f"Retrieved file {chosen_key} from s3://{self.config.bucket}/{self.config.backlog_folder}")
         return bytes(obj["Body"].read()), chosen_key
+
+    def move_to_archive(self, key: str) -> None:
+        """
+        Moves a file from the backlog folder to the archive folder in S3.
+        :param key: The S3 key of the file to move.
+        """
+        copy_source = {"Bucket": self.config.bucket, "Key": key}
+        self.s3_client.copy_object(
+            CopySource=copy_source, Bucket=self.config.bucket, Key=f"{self.config.archive_folder}/{key}"
+        )
+        self.s3_client.delete_object(Bucket=self.config.bucket, Key=key)
+        logger.info(f"Moved file {key} to s3://{self.config.bucket}/{self.config.archive_folder}")

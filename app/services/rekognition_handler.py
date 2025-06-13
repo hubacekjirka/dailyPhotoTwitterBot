@@ -35,7 +35,7 @@ class RekognitionHandler:
             response = self.client.detect_labels(Image={"Bytes": picture}, MaxLabels=10, MinConfidence=50)
             labels = [{"Name": label["Name"], "Confidence": label["Confidence"]} for label in response["Labels"]]
 
-            logger.debug(f"Rekognition labels: {labels}")
+            logger.info(f"Rekognition labels: {labels}")
             return labels
         except Exception as e:
             raise RuntimeError(f"Failed to analyze picture with Rekognition: {e}") from e
