@@ -1,6 +1,7 @@
 from config import Config
 from logger import logger, setup_sentry
 from services.bsky_handler import Bsky_handler
+from services.metadata import Metadata
 from services.rekognition_handler import RekognitionHandler
 from services.s3_handler import S3Handler
 from services.telegram_handler import TelegramHandler
@@ -18,10 +19,9 @@ class Bot:
 
         self.picture = None
         self.picture_path = None
-        self.metadata: dict[str, object] = {}
+        self.metadata: Metadata = Metadata()
 
     def run(self) -> None:
-
         logger.info("Bot is running")
 
         s3_handler = S3Handler(self.config.providers.aws)
@@ -30,12 +30,16 @@ class Bot:
         self.picture, self.picture_path = s3_handler.get_random_file()
 
         logger.info("Getting picture content using Rekognition")
-        rekognition_handler = RekognitionHandler(self.config.providers.aws)
-        self.metadata["picture_content"] = rekognition_handler.get_picture_content(self.picture)
+        try:
+            rekognition_handler = RekognitionHandler(self.config.providers.aws)
+            if content_prediction := rekognition_handler.get_picture_content(self.picture):
+                self.metadata["content_prediction"] = content_prediction
+        except Exception as e:
+            logger.error(f"Failed to get picture content: {e}")
 
         logger.info("Getting camera model from exif data")
         if camera_model := get_camera_from_exif(self.picture):
-            self.metadata["camera_model"] = camera_model
+            self.metadata["camera"] = camera_model
 
         #### Let's start the posting sharade
         # Bluesky
@@ -43,7 +47,7 @@ class Bot:
             logger.info("Posting to Bluesky")
             try:
                 bsky_handler = Bsky_handler(self.config.providers.bsky)
-                bsky_handler.post_picture(self.picture)
+                bsky_handler.post_picture(self.picture, self.metadata)
             except Exception as e:
                 logger.error(f"Failed to post to Bluesky: {e}")
         else:
@@ -54,7 +58,7 @@ class Bot:
             logger.info("Posting to Telegram")
             try:
                 telegram_handler = TelegramHandler(self.config.providers.telegram)
-                telegram_handler.post_picture(self.picture)
+                telegram_handler.post_picture(self.picture, self.metadata)
             except Exception as e:
                 logger.warning(f"Failed to post to Telegram: {e}")
 

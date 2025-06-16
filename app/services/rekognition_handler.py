@@ -23,7 +23,7 @@ class RekognitionHandler:
         except Exception as e:
             raise RuntimeError(f"Failed to initialize Rekognition client: {e}") from e
 
-    def get_picture_content(self, picture: bytes) -> list[dict[str, float]]:
+    def get_picture_content(self, picture: bytes) -> list[dict[str, float]] | None:
         """
         Analyzes the picture using AWS Rekognition and returns an ordered list of label dictionaries.
 
@@ -38,4 +38,5 @@ class RekognitionHandler:
             logger.info(f"Rekognition labels: {labels}")
             return labels
         except Exception as e:
-            raise RuntimeError(f"Failed to analyze picture with Rekognition: {e}") from e
+            logger.error(f"Failed to analyze picture with Rekognition: {e}")
+            return None

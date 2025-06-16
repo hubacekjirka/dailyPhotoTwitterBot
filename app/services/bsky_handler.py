@@ -1,5 +1,6 @@
 from atproto import Client
 from config import BskyProvider
+from services.metadata import Metadata
 from utils import compress_image_to_limit
 
 
@@ -13,8 +14,22 @@ class Bsky_handler:
         except Exception as e:
             raise RuntimeError(f"Failed to initialize Bluesky client: {e}") from e
 
-    def post_picture(self, picture: bytes) -> None:
+    def post_picture(self, picture: bytes, metadata: Metadata) -> None:
         if len(picture) > self.MAX_PICTURE_SIZE:
             picture = compress_image_to_limit(picture, self.MAX_PICTURE_SIZE)
 
-        self.client.send_image(text="Oops", image=picture, image_alt="Right?")
+        hashtags = [
+            f"{str(int(tag['Confidence']))}% #{tag['Name']}"
+            for tag in metadata.get("content_prediction", [])
+            if tag["Confidence"] > 50
+        ][:5]
+        hashtags_text = ", ".join(hashtags) if hashtags else ""
+        camera_model = metadata.get("camera")
+        text = (
+            "#photoOfTheDay bot."
+            + (f" Shot on {camera_model}" if camera_model else "")
+            + (f", AWS Rekognition sees {hashtags_text}" if hashtags_text else "")
+            + " | Sent with ❤️"
+        )
+
+        self.client.send_image(text=text, image=picture, image_alt=text)
