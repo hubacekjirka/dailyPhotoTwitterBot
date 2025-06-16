@@ -16,12 +16,6 @@ formatter = logging.Formatter("[%(levelname)s] %(asctime)s - %(message)s")
 console_handler.setFormatter(formatter)
 
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s %(levelname)s %(funcName)s: %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S",
-)
-
 logger.addHandler(console_handler)
 
 
