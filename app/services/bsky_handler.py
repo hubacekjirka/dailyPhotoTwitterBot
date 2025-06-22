@@ -1,10 +1,26 @@
+from abc import ABC, abstractmethod
+
 from atproto import Client
-from config import BskyProvider
+from config import BskyProvider, TelegramProvider
 from services.metadata import Metadata
+
+# from services.social_handler import SocialHandler
 from utils import compress_image_to_limit
 
 
-class Bsky_handler:
+class SocialHandler(ABC):
+    MAX_PICTURE_SIZE: int  # Should be set by subclasses
+
+    @abstractmethod
+    def __init__(self, config: BskyProvider | TelegramProvider) -> None:
+        pass
+
+    @abstractmethod
+    def post_picture(self, picture: bytes, metadata: Metadata) -> None:
+        pass
+
+
+class Bsky_handler(SocialHandler):
     MAX_PICTURE_SIZE = 976 * 1024  # 976 KB
 
     def __init__(self, bsky_config: BskyProvider) -> None:
