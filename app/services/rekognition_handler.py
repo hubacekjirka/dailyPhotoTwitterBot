@@ -1,3 +1,5 @@
+from typing import List, NamedTuple, Sequence
+
 import boto3
 from config import AwsProvider
 from logger import logger
@@ -9,9 +11,8 @@ class RekognitionHandler:
         """
         Initializes the Rekognition handler with the provided configuration.
         :param aws_config: AwsProvider configuration object containing AWS credentials and region info.
-        :raises
-            KeyError: If any required AWS configuration key is missing.
-            RuntimeError: If there is an issue initializing the Rekognition client.
+        :raises KeyError: If any required AWS configuration key is missing.
+        :raises RuntimeError: If there is an issue initializing the Rekognition client.
         """
         try:
             self.client = boto3.client(
@@ -23,20 +24,31 @@ class RekognitionHandler:
         except Exception as e:
             raise RuntimeError(f"Failed to initialize Rekognition client: {e}") from e
 
-    def get_picture_content(self, picture: bytes) -> list[dict[str, float]] | None:
+    def get_picture_content(
+        self, picture: bytes, max_labels: int = 10, min_confidence: float = 50.0
+    ) -> Sequence["Label"]:
         """
         Analyzes the picture using AWS Rekognition and returns an ordered list of label dictionaries.
 
         :param picture: The binary content of the picture to analyze.
-        :return: List of dictionaries containing label names and their confidence scores.
-        :raises RuntimeError: If there is an issue with the Rekognition client or the analysis fails.
+        :param max_labels: Maximum number of labels to return (default: 10).
+        :param min_confidence: Minimum confidence level for labels (default: 50.0).
+        :returns: Sequence of Label NamedTuples containing label names and confidence scores.
+        :rtype: Sequence[Label]
         """
-        try:
-            response = self.client.detect_labels(Image={"Bytes": picture}, MaxLabels=10, MinConfidence=50)
-            labels = [{"Name": label["Name"], "Confidence": label["Confidence"]} for label in response["Labels"]]
+        logger.info("Getting picture content using Rekognition")
 
-            logger.info(f"Rekognition labels: {labels}")
-            return labels
-        except Exception as e:
-            logger.error(f"Failed to analyze picture with Rekognition: {e}")
-            return None
+        response = self.client.detect_labels(
+            Image={"Bytes": picture}, MaxLabels=max_labels, MinConfidence=min_confidence
+        )
+        labels: List[Label] = [
+            Label(name=str(label["Name"]), confidence=int(label["Confidence"])) for label in response["Labels"]
+        ]
+
+        logger.info(f"Rekognition labels: {labels}")
+        return labels
+
+
+class Label(NamedTuple):
+    name: str
+    confidence: int

@@ -1,7 +1,8 @@
 from abc import ABC, abstractmethod
 
 from config import BskyProvider, TelegramProvider
-from services.metadata import Metadata
+
+from services.picture import Picture
 
 
 class SocialHandler(ABC):
@@ -12,5 +13,5 @@ class SocialHandler(ABC):
         pass
 
     @abstractmethod
-    def post_picture(self, picture: bytes, metadata: Metadata) -> None:
+    def post_picture(self, picture: Picture) -> None:
         pass

@@ -14,5 +14,4 @@ repos:
     rev: v1.10.0
     hooks:
       - id: mypy
-        args: [app/]
         additional_dependencies: ['types-PyYAML', pydantic, types-requests]
