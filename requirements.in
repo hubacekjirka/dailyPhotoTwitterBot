@@ -1,7 +1,7 @@
-pyyaml
-boto3
-pydantic
-atproto
-Pillow
-requests
-sentry_sdk
+pyyaml==6.0.2
+boto3==1.38.15
+pydantic==2.11.5
+atproto==0.0.61
+Pillow==11.2.1
+requests==2.32.4
+sentry_sdk==2.27.0
