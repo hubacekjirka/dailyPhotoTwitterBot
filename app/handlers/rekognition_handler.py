@@ -1,7 +1,8 @@
-from typing import List, NamedTuple, Sequence
+from typing import List, Sequence
 
 import boto3
 from config import AwsProvider
+from core.custom_types import Label
 from logger import logger
 
 
@@ -47,8 +48,3 @@ class RekognitionHandler:
 
         logger.info(f"Rekognition labels: {labels}")
         return labels
-
-
-class Label(NamedTuple):
-    name: str
-    confidence: int

@@ -1,8 +1,7 @@
 from abc import ABC, abstractmethod
 
 from config import BskyProvider, TelegramProvider
-
-from services.picture import Picture
+from core.picture import Picture
 
 
 class SocialHandler(ABC):

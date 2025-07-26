@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import Dict, List, Optional
 
 import yaml
@@ -40,6 +41,11 @@ class TelegramProvider(BaseModel):
     chat_ids: List[int]
 
 
+class GcpProvider(BaseModel):
+    enabled: Optional[bool] = True
+    api_token: str
+
+
 # --- Providers Container ---
 
 
@@ -48,6 +54,7 @@ class Providers(BaseModel):
     aws: AwsProvider
     bsky: BskyProvider
     telegram: TelegramProvider
+    gcp: GcpProvider
 
 
 # --- Root Config ---
@@ -61,7 +68,7 @@ class Config(BaseModel):
 # --- Loader Function ---
 
 
-def load_config(path: str) -> Config:
+def load_config(path: Path) -> Config:
     with open(path, "r") as f:
         data = yaml.safe_load(f)
     return Config(**data)
