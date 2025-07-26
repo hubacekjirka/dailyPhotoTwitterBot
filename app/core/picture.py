@@ -3,12 +3,13 @@ from functools import cached_property
 from typing import Optional, Sequence
 
 from config import AwsProvider, GcpProvider
-from core.custom_types import GeoCoordinates, Label
 from exceptions import PictureResizeError
 from handlers.gcp_handler import GcpHandler
 from handlers.rekognition_handler import RekognitionHandler
 from logger import logger
 from PIL import Image
+
+from core.custom_types import GeoCoordinates, Label
 
 
 class Picture:
@@ -36,7 +37,7 @@ class Picture:
         return None
 
     @cached_property
-    def camera_model(self) -> Optional[str]:
+    def camera_model(self) -> str | None:
         try:
             img = Image.open(io.BytesIO(self.picture_bytes))
             exif_data = img._getexif()
@@ -53,7 +54,7 @@ class Picture:
             return None
 
     @cached_property
-    def _exif_geo_coordinates(self) -> Optional[GeoCoordinates]:
+    def _exif_geo_coordinates(self) -> GeoCoordinates | None:
         """
         Extracts GPS coordinates from the picture's EXIF data.
         :return: A tuple of (latitude, longitude) if available, otherwise None.
