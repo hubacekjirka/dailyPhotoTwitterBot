@@ -23,22 +23,27 @@ class GcpHandler:
 
         if response.status_code == 200:
             data = response.json()
-            logger.debug(f"Reverse geocode response: {data['results']}")
+            logger.debug(f"Reverse geocode response: {data.get('results', [])}")
 
             locality: str = ""
             state: str = ""
 
             for result in data.get("results", []):
-                if "locality" in result["types"] and "political" in result["types"]:
+                if "locality" in result.get("types", []) and "political" in result.get("types", []):
                     locality = result["formatted_address"]
-                if "administrative_area_level_1" in result["types"] and "political" in result["types"]:
+                if "administrative_area_level_1" in result.get("types", []) and "political" in result.get("types", []):
                     state = result["formatted_address"]
 
             if not locality or not state:
                 logger.warning(f"No valid location found in reverse geocode response. Got: {data['results']}")
                 return None
 
-            return locality or state
+            if locality:
+                return locality
+            elif state:
+                return state
+            else:
+                return None
 
         else:
             logger.error(f"Failed to get reverse geolocation: {response.status_code} - {response.text}")
