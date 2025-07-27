@@ -15,6 +15,7 @@ class GcpHandler:
             "latlng": f"{coordinates.latitude},{coordinates.longitude}",
         }
 
+        # TODO: Wrap in a function with retry decorator
         try:
             response = requests.get(url, params=params)
         except requests.exceptions.RequestException as e:
@@ -34,15 +35,12 @@ class GcpHandler:
                 if "administrative_area_level_1" in result.get("types", []) and "political" in result.get("types", []):
                     state = result["formatted_address"]
 
-            if not locality or not state:
-                logger.warning(f"No valid location found in reverse geocode response. Got: {data['results']}")
-                return None
-
             if locality:
                 return locality
             elif state:
                 return state
             else:
+                logger.warning(f"No valid location found in reverse geocode response. Got: {data['results']}")
                 return None
 
         else:
