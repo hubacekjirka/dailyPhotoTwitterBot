@@ -1,9 +1,9 @@
 from config import Config
+from core.picture import Picture
+from handlers.bsky_handler import BskyHandler
+from handlers.s3_handler import S3Handler
+from handlers.telegram_handler import TelegramHandler
 from logger import logger, setup_sentry
-from services.bsky_handler import BskyHandler
-from services.picture import Picture
-from services.s3_handler import S3Handler
-from services.telegram_handler import TelegramHandler
 
 
 class Bot:
@@ -23,7 +23,10 @@ class Bot:
         logger.info("Retrieving random file from S3")
         picture_bytes, picture_path = self.s3_handler.get_random_file()
         self.picture = Picture(
-            picture_bytes=picture_bytes, picture_path=picture_path, aws_config=self.config.providers.aws
+            picture_bytes=picture_bytes,
+            picture_path=picture_path,
+            aws_config=self.config.providers.aws,
+            gcp_config=self.config.providers.gcp,
         )
 
         #### Let's start the posting sharade

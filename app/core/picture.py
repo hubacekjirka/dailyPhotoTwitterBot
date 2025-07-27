@@ -2,19 +2,24 @@ import io
 from functools import cached_property
 from typing import Optional, Sequence
 
-from config import AwsProvider
+from config import AwsProvider, GcpProvider
 from exceptions import PictureResizeError
+from handlers.gcp_handler import GcpHandler
+from handlers.rekognition_handler import RekognitionHandler
 from logger import logger
 from PIL import Image
 
-from services.rekognition_handler import Label, RekognitionHandler
+from core.custom_types import GeoCoordinates, Label
 
 
 class Picture:
-    def __init__(self, picture_bytes: bytes, picture_path: str, aws_config: AwsProvider) -> None:
+    def __init__(
+        self, picture_bytes: bytes, picture_path: str, aws_config: AwsProvider, gcp_config: GcpProvider
+    ) -> None:
         self.picture_bytes = picture_bytes
         self.picture_path = picture_path
         self.aws_config = aws_config
+        self.gcp_config = gcp_config
 
     @cached_property
     def content_prediction(self) -> Optional[Sequence["Label"]]:
@@ -32,7 +37,7 @@ class Picture:
         return None
 
     @cached_property
-    def camera_model(self) -> Optional[str]:
+    def camera_model(self) -> str | None:
         try:
             img = Image.open(io.BytesIO(self.picture_bytes))
             exif_data = img._getexif()
@@ -47,6 +52,44 @@ class Picture:
         except Exception as e:
             logger.warning(f"Couldn't get camera from exif: {e}")
             return None
+
+    @cached_property
+    def _exif_geo_coordinates(self) -> GeoCoordinates | None:
+        """
+        Extracts GPS coordinates from the picture's EXIF data.
+        :return: A tuple of (latitude, longitude) if available, otherwise None.
+        """
+        try:
+            img = Image.open(io.BytesIO(self.picture_bytes))
+            exif_data = img._getexif()
+
+            gps_info = exif_data.get(34853)
+            if gps_info:
+                lat_direction = gps_info.get(1)
+                lat_dms = gps_info.get(2)
+                lon_direction = gps_info.get(3)
+                lon_dms = gps_info.get(4)
+                if lat_dms and lon_dms and lat_direction and lon_direction:
+                    lat = float(lat_dms[0] + lat_dms[1] / 60 + lat_dms[2] / 3600)
+                    lat = -lat if lat_direction == "S" else lat
+
+                    long = float(lon_dms[0] + lon_dms[1] / 60 + lon_dms[2] / 3600)
+                    long = -long if lon_direction == "W" else long
+
+                    return GeoCoordinates(lat, long)
+
+        except Exception as e:
+            logger.warning(f"Couldn't get GPS coordinates from EXIF data: {e}")
+
+        return None
+
+    @cached_property
+    def place(self) -> Optional[str]:
+        if not self.gcp_config.enabled or not self._exif_geo_coordinates:
+            return None
+
+        gcp_handler = GcpHandler(self.gcp_config.api_token)
+        return gcp_handler.get_reverse_geolocation(self._exif_geo_coordinates)
 
     def compress_image(self, max_size_bytes: int, max_dimension: int) -> bytes:
         """

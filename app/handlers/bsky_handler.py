@@ -1,8 +1,8 @@
 from atproto import Client
 from config import BskyProvider
+from core.picture import Picture
 
-from services.picture import Picture
-from services.social_handler import SocialHandler
+from handlers.social_handler import SocialHandler
 
 
 class BskyHandler(SocialHandler):
@@ -27,9 +27,10 @@ class BskyHandler(SocialHandler):
         hashtags_text = ", ".join(hashtags) if hashtags else ""
 
         text = (
-            "#photoOfTheDay bot."
-            + (f" Shot on {picture.camera_model}" if picture.camera_model else "")
-            + (f", AWS Rekognition sees {hashtags_text}" if hashtags_text else "")
+            "#photoOfTheDay"
+            + (f" shot on {picture.camera_model}" if picture.camera_model else "")
+            + (f" taken in {picture.place}" if picture.place else "")
+            + (f" | AWS Rekognition sees {hashtags_text}" if hashtags_text else "")
             + " | Sent with ❤️"
         )
 
