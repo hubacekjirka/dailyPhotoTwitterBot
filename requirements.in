@@ -4,4 +4,4 @@ pydantic==2.11.5
 atproto==0.0.61
 Pillow==11.2.1
 requests==2.32.4
-sentry_sdk==2.27.0
+sentry-sdk==2.27.0

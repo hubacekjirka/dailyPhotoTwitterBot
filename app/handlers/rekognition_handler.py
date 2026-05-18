@@ -1,6 +1,6 @@
 from typing import List, Sequence
 
-import boto3
+import boto3 as boto3
 from config import AwsProvider
 from core.custom_types import Label
 from logger import logger

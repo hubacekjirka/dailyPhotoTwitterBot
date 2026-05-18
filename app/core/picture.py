@@ -1,15 +1,18 @@
 import io
+from collections.abc import Callable, Mapping
 from functools import cached_property
-from typing import Optional, Sequence
+from typing import Any, Optional, Sequence, cast
 
 from config import AwsProvider, GcpProvider
 from exceptions import PictureResizeError
 from handlers.gcp_handler import GcpHandler
 from handlers.rekognition_handler import RekognitionHandler
 from logger import logger
-from PIL import Image
+from PIL import Image as Image
 
 from core.custom_types import GeoCoordinates, Label
+
+ExifData = Mapping[int, Any]
 
 
 class Picture:
@@ -20,6 +23,13 @@ class Picture:
         self.picture_path = picture_path
         self.aws_config = aws_config
         self.gcp_config = gcp_config
+
+    def _read_exif(self) -> ExifData | None:
+        img = Image.open(io.BytesIO(self.picture_bytes))
+        get_exif = cast(Callable[[], ExifData | None] | None, getattr(img, "_getexif", None))
+        if get_exif is None:
+            return None
+        return get_exif()
 
     @cached_property
     def content_prediction(self) -> Optional[Sequence["Label"]]:
@@ -39,8 +49,10 @@ class Picture:
     @cached_property
     def camera_model(self) -> str | None:
         try:
-            img = Image.open(io.BytesIO(self.picture_bytes))
-            exif_data = img._getexif()
+            exif_data = self._read_exif()
+            if not exif_data:
+                logger.warning("No camera model or make EXIF data found in the image.")
+                return None
 
             value = exif_data.get(272) or exif_data.get(271)
             return str(value) if value is not None else None
@@ -60,8 +72,9 @@ class Picture:
         :return: A tuple of (latitude, longitude) if available, otherwise None.
         """
         try:
-            img = Image.open(io.BytesIO(self.picture_bytes))
-            exif_data = img._getexif()
+            exif_data = self._read_exif()
+            if not exif_data:
+                return None
 
             gps_info = exif_data.get(34853)
             if gps_info:

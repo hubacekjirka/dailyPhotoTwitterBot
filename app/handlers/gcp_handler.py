@@ -1,4 +1,4 @@
-import requests
+import requests as requests
 from core.custom_types import GeoCoordinates
 from logger import logger
 

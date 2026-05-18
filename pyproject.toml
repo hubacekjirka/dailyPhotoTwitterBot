@@ -1,15 +1,21 @@
 [tool.black]
 line-length = 120
-target-version = ["py312"]
+target-version = ["py313"]
 
 [tool.ruff]
 line-length = 120
-target-version = "py312"
+target-version = "py313"
+fix = true
+
+[tool.ruff.lint]
 select = ["E", "F", "B", "I"]  # Common rule sets: pyflakes, pycodestyle, bugbear, isort
 ignore = ["E203", ]     # Compatibility with Black
-fix = true
 
 [tool.mypy]
 python_version = 3.13
 strict = true
 mypy_path = "app"
+
+[[tool.mypy.overrides]]
+module = "atproto"
+ignore_missing_imports = true

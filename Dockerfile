@@ -1,24 +1,16 @@
-# Base image with Python 3.13 (use official or custom-built until officially available)
-FROM python:3.13-rc-bullseye
+# Base image with stable Python 3.13
+FROM python:3.13-slim
 
 # Set environment variables
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
 
 # Create working directory
 WORKDIR /app
 
-# Install pip-tools for compiling requirements
-RUN pip install --upgrade pip pip-tools
-
-# Copy your requirements file
-COPY requirements.in .
-
-# Compile requirements.txt
-RUN pip-compile requirements.in
-
-# Install compiled dependencies
-RUN pip install -r requirements.txt
+# Install production dependencies
+COPY requirements.txt .
+RUN python -m pip install --upgrade pip && python -m pip install --no-cache-dir -r requirements.txt
 
 # Copy the rest of the app
 COPY . .

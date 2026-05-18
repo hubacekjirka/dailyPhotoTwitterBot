@@ -10,12 +10,13 @@ providers:
     enabled: true
     dsn: "UT"
 
-  "s3":
+  "aws":
     region: "UT"
     bucket: "UT"
     access_key_id: "UT"
     secret_access_key: "UT"
     backlog_folder: "backlog"
+    archive_folder: "archive"
 
   "bsky":
     enabled: true
@@ -28,3 +29,6 @@ providers:
     chat_ids:
       - 000000000
 
+  "gcp":
+    enabled: true
+    api_token: "UT"

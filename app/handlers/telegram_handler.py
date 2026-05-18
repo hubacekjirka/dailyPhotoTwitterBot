@@ -1,6 +1,6 @@
-import time
+import time as time
 
-import requests
+import requests as requests
 from config import TelegramProvider
 from core.picture import Picture
 from logger import logger
