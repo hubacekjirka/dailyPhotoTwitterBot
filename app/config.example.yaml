@@ -1,0 +1,34 @@
+app_config:
+  throwback_thursday: true
+  camera_mapping:
+    GM1913: "Oneplus 7 Pro"
+    FC3170: "Mavic Air 2"
+    SP500: "Canon AE-1 Program"
+
+providers:
+  sentry:
+    enabled: false
+    dsn: "https://public@example.ingest.sentry.io/project-id"
+
+  aws:
+    region: "eu-central-1"
+    bucket: "photo-bot-bucket"
+    access_key_id: "AWS_ACCESS_KEY_ID"
+    secret_access_key: "AWS_SECRET_ACCESS_KEY"
+    backlog_folder: "backlog"
+    archive_folder: "archive"
+
+  bsky:
+    enabled: false
+    login: "user.example.bsky.social"
+    bsky_password: "app-password"
+
+  telegram:
+    enabled: false
+    telegram_token: "123456789:telegram-bot-token"
+    chat_ids:
+      - 123456789
+
+  gcp:
+    enabled: false
+    api_token: "google-maps-api-token"

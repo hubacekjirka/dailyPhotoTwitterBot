@@ -1,0 +1,11 @@
+-r requirements.in
+pytest==8.3.5
+pytest-cov==6.1.1
+black==25.1.0
+ruff==0.8.6
+mypy==1.16.0
+pre-commit==4.2.0
+pip-tools==7.4.1
+boto3-stubs==1.38.42
+types-PyYAML==6.0.12.20250402
+types-requests==2.32.4.20250611

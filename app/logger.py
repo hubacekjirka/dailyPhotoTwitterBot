@@ -1,6 +1,6 @@
 import logging
 
-import sentry_sdk
+import sentry_sdk as sentry_sdk
 from config import SentryProvider
 
 # Set up standard logging

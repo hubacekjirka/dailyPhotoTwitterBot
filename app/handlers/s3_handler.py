@@ -1,7 +1,7 @@
-import random
+import random as random
 from typing import Tuple
 
-import boto3
+import boto3 as boto3
 from config import AwsProvider
 from logger import logger
 
