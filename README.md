@@ -20,7 +20,7 @@
 
 ```sh
 git clone https://github.com/hubacekjirka/dailyPhotoTwitterBot.git
-docker build ./app --tag hubacekjirka/photooftheday
+docker build . --tag hubacekjirka/photooftheday
 ```
 For container debugging use Dockerfile_debug configuring debugpy and letting the script wait for debugger attachement:
 ```sh
@@ -56,9 +56,11 @@ In VS, setup path mapping in launch.json (local and remoteRoot need to fit on ea
 ### Without S3
 Map Docker host photo folder to the guest (when not using S3)
 ```sh
-docker run --volume /PathToThePhotoFolder/photos:/app/src/photos \
--it hubacekjirka/photooftheday
+docker run \
+  --volume /PathToThePhotoFolder/photos:/app/src/photos \
+  -it hubacekjirka/photooftheday
 ```
+By default the image reads `/app/config.yaml`. Set `BOT_CONFIG_PATH` if the config is mounted somewhere else at runtime.
 The bot expects the following folders in the '/PathToThePhotoFolder/photos' foder:
 - 'backlog' - photos to be posted
 - 'usedPhotos' - succesfully posted photo

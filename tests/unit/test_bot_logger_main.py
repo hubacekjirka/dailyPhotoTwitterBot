@@ -192,7 +192,20 @@ def test_main_loads_config_and_runs_bot(monkeypatch: pytest.MonkeyPatch, ut_conf
 
     main_module.main()
 
-    assert calls == [("load", Path("app", "config.yaml")), ("bot-init", ut_config), ("bot-run", None)]
+    assert calls == [("load", main_module.DEFAULT_CONFIG_FILE_PATH), ("bot-init", ut_config), ("bot-run", None)]
+
+
+def test_get_config_path_uses_cwd_config_when_default_is_missing(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    config_path = tmp_path / "config.yaml"
+    config_path.touch()
+
+    monkeypatch.delenv("BOT_CONFIG_PATH", raising=False)
+    monkeypatch.setattr(main_module, "DEFAULT_CONFIG_FILE_PATH", tmp_path / "app" / "config.yaml")
+    monkeypatch.chdir(tmp_path)
+
+    assert main_module.get_config_path() == config_path
 
 
 def test_main_uses_bot_config_path_env_var(monkeypatch: pytest.MonkeyPatch, ut_config: Config) -> None:

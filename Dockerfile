@@ -12,8 +12,8 @@ WORKDIR /app
 COPY requirements.txt .
 RUN python -m pip install --upgrade pip && python -m pip install --no-cache-dir -r requirements.txt
 
-# Copy the rest of the app
-COPY . .
+# Copy the app source
+COPY app/ .
 
-# Default command (adjust as needed)
-CMD ["python", "./app/main.py"]
+# Default command
+CMD ["python", "main.py"]

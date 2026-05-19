@@ -82,6 +82,11 @@ def test_load_config_reads_yaml_file(tmp_path: Path) -> None:
     assert config.providers.telegram.chat_ids == [123]
 
 
+def test_load_config_missing_file_mentions_config_env_var(tmp_path: Path) -> None:
+    with pytest.raises(FileNotFoundError, match="BOT_CONFIG_PATH"):
+        load_config(tmp_path / "missing.yaml")
+
+
 def test_missing_provider_block_raises_validation_error(tmp_path: Path) -> None:
     config_path = tmp_path / "config.yaml"
     config_path.write_text(

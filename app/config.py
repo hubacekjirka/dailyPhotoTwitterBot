@@ -69,6 +69,12 @@ class Config(BaseModel):
 
 
 def load_config(path: Path) -> Config:
-    with open(path, "r") as f:
-        data = yaml.safe_load(f)
+    try:
+        with path.open("r", encoding="utf-8") as f:
+            data = yaml.safe_load(f)
+    except FileNotFoundError as exc:
+        raise FileNotFoundError(
+            f"Config file not found at {path}. Set BOT_CONFIG_PATH to the mounted config file path."
+        ) from exc
+
     return Config(**data)
