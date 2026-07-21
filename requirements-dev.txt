@@ -36,7 +36,7 @@ mypy-extensions==1.1.0
 nodeenv==1.10.0
 packaging==26.2
 pathspec==1.1.1
-pillow==11.2.1
+pillow==12.3.0
 pip-tools==7.4.1
 platformdirs==4.9.6
 pluggy==1.6.0
