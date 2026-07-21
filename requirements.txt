@@ -21,7 +21,7 @@ httpx==0.28.1
 idna==3.15
 jmespath==1.1.0
 libipld==3.3.2
-pillow==11.2.1
+pillow==12.3.0
 pycparser==3.0
 pydantic==2.11.5
 pydantic-core==2.33.2
